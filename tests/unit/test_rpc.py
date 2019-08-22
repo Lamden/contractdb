@@ -2,6 +2,9 @@ from unittest import TestCase
 from contracting.server import rpc
 from contracting.client import ContractingClient
 from contracting.execution.executor import Executor
+from contracting.utils import make_tx
+import nacl.signing
+import json
 
 client = ContractingClient()
 
@@ -164,3 +167,44 @@ def stu():
 
         self.assertEqual(response, expected)
 
+    def test_run_tx(self):
+        rpc.driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        rpc.driver.set_contract(name='submission',
+                            code=contract,
+                            author='sys')
+
+        contract = '''
+owner = Variable()
+
+@construct
+def seed():
+    owner.set(ctx.caller)
+
+@export
+def get_owner():
+    return owner.get()
+        '''
+
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = make_tx(nakey,
+                     contract='submission',
+                     func='submit_contract',
+                     arguments={
+                        'code': contract,
+                        'name': 'stu_bucks'
+                    })
+
+        result = rpc.run(tx)
+
+        self.assertEqual(result[0], tx)
+
+        owner = result[1]['updates'].get('stu_bucks.owner')
+
+        self.assertEqual(owner, json.dumps(pk))
