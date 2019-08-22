@@ -10,11 +10,14 @@ async def stop_server(s, timeout):
     s.stop()
 
 
-async def get(msg, ctx):
+async def get(msg, ctx, _json=True):
     socket = ctx.socket(zmq.DEALER)
     socket.connect('tcp://127.0.0.1:2020')
 
-    await socket.send_json(msg)
+    if _json:
+        await socket.send_json(msg)
+    else:
+        await socket.send(msg)
 
     res = await socket.recv()
 
@@ -94,3 +97,18 @@ def stu():
         expected = rpc.get_contract('stustu')
 
         self.assertEqual(res, expected)
+
+    def test_sending_bad_command_returns_none_results(self):
+        # Setup server
+        m = Server(port=2020, ctx=self.ctx)
+
+        tasks = asyncio.gather(
+            m.serve(),
+            get(b'', self.ctx, _json=False),
+            stop_server(m, 0.2),
+        )
+
+        loop = asyncio.get_event_loop()
+        res = loop.run_until_complete(tasks)[1]
+
+        self.assertIsNone(res)
