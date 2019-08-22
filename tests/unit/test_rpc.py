@@ -270,3 +270,25 @@ def a():
         res = rpc.lint(code)
 
         self.assertEqual(res[0], err)
+
+    def test_compile(self):
+        code = '''
+@export
+def public():
+    private('hello')
+
+def private(message):
+    print(message)
+'''
+
+        compiled_code = '''def public():
+    __private('hello')
+
+
+def __private(message):
+    print(message)
+'''
+
+        compiled_result = rpc.compile_code(code)
+
+        self.assertEqual(compiled_result, compiled_code)

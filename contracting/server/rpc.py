@@ -131,12 +131,8 @@ def lint(code: str):
     return return_list
 
 
-def compile(code: str):
-    compiled_code = compiler.parse_to_code(code)
-
-    return {
-        'compiled_code': compiled_code
-    }
+def compile_code(code: str):
+    return compiler.parse_to_code(code)
 
 
 # String to callable map for strict RPC capabilities. Explicit for a reason!
@@ -147,7 +143,7 @@ command_map = {
     'run': run,
     'run_all': run_all,
     'lint': lint,
-    'compile': compile
+    'compile': compile_code
 }
 
 
