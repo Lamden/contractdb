@@ -1,9 +1,11 @@
 import asyncio
 import zmq
-import json
+import zmq.asyncio
 from .rpc import process_json_rpc_command
+from ..db.encoder import encode, decode
 
-class AsyncInbox:
+
+class Server:
     def __init__(self, port: int, ctx: zmq.Context, linger=2000, poll_timeout=2000):
         self.port = port
 
@@ -38,19 +40,24 @@ class AsyncInbox:
         self.socket.close()
 
     async def handle_msg(self, _id, msg):
+        # Try to deserialize the message and run it through the rpc service
         try:
-            json_command = json.loads(msg.decode())
+            json_command = decode(msg.decode())
+            result = process_json_rpc_command(json_command)
+
+        # If this fails, just set the result to None
         except:
-            pass
+            result = None
 
-        asyncio.ensure_future(self.return_msg(_id, msg))
-
-    async def return_msg(self, _id, msg):
+        # Try to send the message now. This persists if the socket fails.
         sent = False
         while not sent:
             try:
+                msg = encode(result).encode()
+
                 await self.socket.send_multipart([_id, msg])
                 sent = True
+
             except zmq.error.ZMQError:
                 self.socket.close()
                 self.setup_socket()
@@ -62,3 +69,11 @@ class AsyncInbox:
 
     def stop(self):
         self.running = False
+
+
+def start_server(port=2020, ctx=zmq.asyncio.Context()):
+    server = Server(port=port, ctx=ctx)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(server.serve())
+    loop.close()
