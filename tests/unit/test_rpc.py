@@ -292,3 +292,53 @@ def __private(message):
         compiled_result = rpc.compile_code(code)
 
         self.assertEqual(compiled_result, compiled_code)
+
+    def test_process_json_rpc_command(self):
+        contract = '''
+def stu():
+    print('howdy partner')
+'''
+
+        name = 'stustu'
+        author = 'woohoo'
+        _t = 'test'
+
+        rpc.driver.set_contract(name, contract, author=author, _type=_t)
+
+        command = {'command': 'get_contract',
+                   'arguments': {
+                       'name': 'stustu'
+                   }}
+
+        got_contract = rpc.get_contract('stustu')
+
+        rpc_result = rpc.process_json_rpc_command(command)
+
+        self.assertEqual(got_contract, rpc_result)
+
+    def test_process_no_command(self):
+        command = {
+                   'arguments': {
+                       'name': 'stustu'
+                   }}
+
+        rpc_result = rpc.process_json_rpc_command(command)
+
+        self.assertIsNone(rpc_result)
+
+    def test_process_no_args(self):
+        command = {'command': 'get_contract'}
+
+        rpc_result = rpc.process_json_rpc_command(command)
+
+        self.assertIsNone(rpc_result)
+
+    def test_process_command_that_doesnt_exist(self):
+        command = {'command': 'get_stu',
+                   'arguments': {
+                       'name': 'stustu'
+                   }}
+
+        rpc_result = rpc.process_json_rpc_command(command)
+
+        self.assertIsNone(rpc_result)
