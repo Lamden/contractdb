@@ -208,3 +208,53 @@ def get_owner():
         owner = result[1]['updates'].get('stu_bucks.owner')
 
         self.assertEqual(owner, json.dumps(pk))
+
+    def test_run_all_tx(self):
+        rpc.driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        rpc.driver.set_contract(name='submission',
+                                code=contract,
+                                author='sys')
+
+        contract = '''
+owner = Variable()
+
+@construct
+def seed():
+    owner.set(ctx.caller)
+
+@export
+def get_owner():
+    return owner.get()
+                '''
+
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = make_tx(nakey,
+                     contract='submission',
+                     func='submit_contract',
+                     arguments={
+                         'code': contract,
+                         'name': 'stu_bucks'
+                     })
+
+        tx_2 = make_tx(nakey,
+                       contract='stu_bucks',
+                       func='get_owner',
+                       arguments={})
+
+        result = rpc.run_all([tx, tx_2])
+
+        self.assertEqual(result[0][0], tx)
+        self.assertEqual(result[1][0], tx_2)
+
+        owner = result[0][1]['updates'].get('stu_bucks.owner')
+        accessed_owner = result[1][1]['result']
+
+        self.assertEqual(owner, json.dumps(pk))
+        self.assertEqual(accessed_owner, pk)
