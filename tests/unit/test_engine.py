@@ -3,6 +3,8 @@ import nacl.signing
 import json
 from contracting.execution.executor import Engine
 from contracting.db.driver import ContractDriver
+from contracting.utils import make_tx
+from contracting.db.encoder import encode
 
 driver = ContractDriver()
 
@@ -153,8 +155,22 @@ class TestEngine(TestCase):
                             code=contract,
                             author='sys')
 
-        with open('./test_sys_contracts/currency.s.py') as file:
-            contract_code = file.read()
+        contract = '''
+owner = Variable()
+
+@construct
+def seed():
+    owner.set(ctx.caller)
+    
+@export
+def get_owner():
+    return owner.get()
+        '''
+
+
+
+        #with open('./test_sys_contracts/currency.s.py') as file:
+        #    contract_code = file.read()
 
         nakey = nacl.signing.SigningKey.generate()
 
@@ -167,7 +183,7 @@ class TestEngine(TestCase):
                 'contract': 'submission',
                 'function': 'submit_contract',
                 'arguments': {
-                    'code': contract_code,
+                    'code': contract,
                     'name': 'stu_bucks'
                 }
             }
@@ -184,3 +200,34 @@ class TestEngine(TestCase):
         output = e.run(tx)
 
         print(output)
+
+    def test_make_tx(self):
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = {
+            'sender': pk,
+            'signature': None,
+            'payload': {
+                'contract': 'submission',
+                'function': 'submit_contract',
+                'arguments': {
+                    'code': 'test',
+                    'name': 'stu_bucks'
+                }
+            }
+        }
+
+        message = encode(tx['payload']).encode()
+
+        sig = nakey.sign(message)[:64].hex()
+
+        tx['signature'] = sig
+
+        made_tx = make_tx(nakey, contract='submission', func='submit_contract', arguments={
+                    'code': 'test',
+                    'name': 'stu_bucks'
+                })
+
+        self.assertEqual(made_tx, tx)
