@@ -1,11 +1,12 @@
 from ..db.driver import ContractDriver
-from ..execution.executor import Executor
+from ..execution.executor import Engine
 from ..compilation.compiler import ContractingCompiler
 
 import ast
 
 driver = ContractDriver()
 compiler = ContractingCompiler()
+engine = Engine()
 
 NO_CONTRACT = 1
 NO_VARIABLE = 2
@@ -104,11 +105,18 @@ def get_vars(contract: str):
 
 
 def run(transaction: dict):
-    pass
+    output = engine.run(transaction)
+    return [transaction, output]
 
 
 def run_all(transactions: list):
-    pass
+    results = []
+
+    for transaction in transactions:
+        output = engine.run(transaction)
+        results.append([transaction, output])
+
+    return results
 
 
 def lint(code: str):

@@ -167,11 +167,6 @@ def get_owner():
     return owner.get()
         '''
 
-
-
-        #with open('./test_sys_contracts/currency.s.py') as file:
-        #    contract_code = file.read()
-
         nakey = nacl.signing.SigningKey.generate()
 
         pk = nakey.verify_key.encode().hex()
@@ -199,7 +194,9 @@ def get_owner():
 
         output = e.run(tx)
 
-        print(output)
+        owner = output['updates'].get('stu_bucks.owner')
+
+        self.assertEqual(owner, json.dumps(pk))
 
     def test_make_tx(self):
         nakey = nacl.signing.SigningKey.generate()
@@ -231,3 +228,96 @@ def get_owner():
                 })
 
         self.assertEqual(made_tx, tx)
+
+    def test_engine_returns_malformed_tx_when_run(self):
+        tx = {
+            'signature': 'hex of payload which is alphabetized json for now...',
+            'payload': {
+                'contract': 'string',
+                'function': 'string',
+                'arguments': {
+                    'string': 123,
+                }
+            }
+        }
+
+        e = Engine()
+
+        output = e.run(tx)
+        self.assertEqual(output['status'], 1)
+
+    def test_engine_returns_bad_sig_when_run(self):
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = {
+            'sender': pk,
+            'signature': None,
+            'payload': {
+                'contract': 'string',
+                'function': 'string',
+                'arguments': {
+                    'string': 123,
+                }
+            }
+        }
+
+        message = json.dumps(tx['payload']).encode()
+
+        sig = nakey.sign(message)[:64].hex()
+
+        tx['signature'] = sig[:2]
+
+        e = Engine()
+
+        output = e.run(tx)
+
+        self.assertEqual(output['status'], 2)
+
+    def test_engine_raises_py_exception_if_assert_fails(self):
+        driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        driver.set_contract(name='submission',
+                            code=contract,
+                            author='sys')
+
+        contract = '''
+        owner = Variable()
+
+        @construct
+        def seed():
+            owner.set(ctx.caller)
+                '''
+
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = {
+            'sender': pk,
+            'signature': None,
+            'payload': {
+                'contract': 'submission',
+                'function': 'submit_contract',
+                'arguments': {
+                    'code': contract,
+                    'name': 'stu_bucks'
+                }
+            }
+        }
+
+        message = json.dumps(tx['payload']).encode()
+
+        sig = nakey.sign(message)[:64].hex()
+
+        tx['signature'] = sig
+
+        e = Engine()
+
+        output = e.run(tx)
+
+        self.assertEqual(output['status'], 3)

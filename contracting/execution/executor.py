@@ -237,11 +237,14 @@ class Engine:
             tx_output['status'] = PY_EXCEPTION
 
         # Get the current cache of sets for the tx output
+
         _driver = runtime.rt.env.get('__Driver')
 
         tx_output['updates'] = _driver.sets
 
         # Clear them for the next execution
         _driver.clear_sets()
+
+        runtime.rt.clean_up()
 
         return tx_output
