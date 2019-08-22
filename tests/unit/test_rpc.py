@@ -258,3 +258,15 @@ def get_owner():
 
         self.assertEqual(owner, json.dumps(pk))
         self.assertEqual(accessed_owner, pk)
+
+    def test_lint_code(self):
+        code = '''
+@export
+def a():
+    __ruh_roh__ = 'shaggy'
+        '''
+        err = "Line 4 : S2- Illicit use of '_' before variable : __ruh_roh__"
+
+        res = rpc.lint(code)
+
+        self.assertEqual(res[0], err)

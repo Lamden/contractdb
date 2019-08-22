@@ -123,14 +123,12 @@ def lint(code: str):
     tree = ast.parse(code)
     violations = compiler.linter.check(tree)
 
-    return_dict = {
-        'violations': [],
-    }
+    return_list = []
 
-    if violations is not None:
-        return_dict['violations'] = violations
+    for violation in violations:
+        return_list.append(violation)
 
-    return return_dict
+    return return_list
 
 
 def compile(code: str):
