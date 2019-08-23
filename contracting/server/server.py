@@ -6,7 +6,7 @@ from ..db.encoder import encode, decode
 
 
 class Server:
-    def __init__(self, port: int, ctx: zmq.Context, linger=2000, poll_timeout=200):
+    def __init__(self, port: int, ctx: zmq.Context, linger=2000, poll_timeout=2002):
         self.port = port
 
         self.address = 'tcp://*:{}'.format(port)
