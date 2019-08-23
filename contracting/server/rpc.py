@@ -1,7 +1,7 @@
 from ..db.driver import ContractDriver
 from ..execution.executor import Engine
 from ..compilation.compiler import ContractingCompiler
-from ..db.encoder import encode
+from .. import utils
 
 import ast
 
@@ -107,17 +107,7 @@ def get_vars(contract: str):
 
 def run(transaction: dict):
     output = engine.run(transaction)
-
-
-
-    # Hash transaction and output
-    tx_output = {
-        'input': transaction,
-        'output': output,
-
-    }
-
-    return [transaction, output]
+    return utils.make_finalized_tx(transaction, output)
 
 
 def run_all(transactions: list):
@@ -125,7 +115,8 @@ def run_all(transactions: list):
 
     for transaction in transactions:
         output = engine.run(transaction)
-        results.append([transaction, output])
+        result = utils.make_finalized_tx(transaction, output)
+        results.append(result)
 
     return results
 

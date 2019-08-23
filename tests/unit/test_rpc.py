@@ -203,9 +203,9 @@ def get_owner():
 
         result = rpc.run(tx)
 
-        self.assertEqual(result[0], tx)
+        self.assertEqual(result['input'], tx)
 
-        owner = result[1]['updates'].get('stu_bucks.owner')
+        owner = result['output']['updates'].get('stu_bucks.owner')
 
         self.assertEqual(owner, json.dumps(pk))
 
@@ -250,11 +250,11 @@ def get_owner():
 
         result = rpc.run_all([tx, tx_2])
 
-        self.assertEqual(result[0][0], tx)
-        self.assertEqual(result[1][0], tx_2)
+        self.assertEqual(result[0]['input'], tx)
+        self.assertEqual(result[1]['input'], tx_2)
 
-        owner = result[0][1]['updates'].get('stu_bucks.owner')
-        accessed_owner = result[1][1]['result']
+        owner = result[0]['output']['updates'].get('stu_bucks.owner')
+        accessed_owner = result[1]['output']['result']
 
         self.assertEqual(owner, json.dumps(pk))
         self.assertEqual(accessed_owner, pk)
