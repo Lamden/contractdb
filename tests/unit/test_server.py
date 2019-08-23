@@ -5,6 +5,7 @@ import zmq
 from contracting.server import rpc
 import json
 
+
 async def stop_server(s, timeout):
     await asyncio.sleep(timeout)
     s.stop()
