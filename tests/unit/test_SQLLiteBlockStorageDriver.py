@@ -64,3 +64,11 @@ class TestSQLLiteBlockStorageDriver(TestCase):
         chain = SQLLiteBlockStorageDriver()
 
         pprint(chain.get_block_by_hash('hello'))
+
+    def test_height(self):
+        chain = SQLLiteBlockStorageDriver()
+        print(chain.height())
+
+    def test_latest_hash(self):
+        chain = SQLLiteBlockStorageDriver()
+        print(chain.latest_hash())

@@ -36,16 +36,18 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         self.cursor.execute('create table if not exists transaction_outputs (hash text primary key,'
                             'parent_block text, block_index integer, status integer, updates text)')
 
-    def get_block_by_hash(self, h: str):
-        self.cursor.execute('select * from blocks where hash=?', (h,))
-        block = self.cursor.fetchone()
+    def height(self):
+        self.cursor.execute('select idx from blocks order by idx desc')
+        h = self.cursor.fetchone()
+        return h[0]
 
-        self.cursor.execute('select * from transaction_inputs where parent_block=?', (h,))
-        tx_inputs = self.cursor.fetchall()
+    def latest_hash(self):
+        self.cursor.execute('select hash from blocks order by idx desc')
+        h = self.cursor.fetchone()
+        return h[0]
 
-        self.cursor.execute('select * from transaction_outputs where parent_block=?', (h,))
-        tx_outputs = self.cursor.fetchall()
-
+    @staticmethod
+    def _build_block(block, tx_inputs, tx_outputs):
         block_dict = {
             'hash': block[0],
             'index': block[1],
@@ -54,7 +56,6 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
 
         # Iterate through all transactions fetched
         for i in range(len(tx_inputs)):
-
             # Unpack the arguments in a concise way
             tx_hash, _, idx, sender, sig, contract, func, args = tx_inputs[i]
             args_unpacked = json.loads(args)
@@ -88,6 +89,65 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         sorted(block_dict['transactions'], key=lambda t: t['index'])
 
         return block_dict
+
+    def get_block_by_hash(self, h: str):
+        self.cursor.execute('select * from blocks where hash=?', (h,))
+        block = self.cursor.fetchone()
+
+        self.cursor.execute('select * from transaction_inputs where parent_block=?', (h,))
+        tx_inputs = self.cursor.fetchall()
+
+        self.cursor.execute('select * from transaction_outputs where parent_block=?', (h,))
+        tx_outputs = self.cursor.fetchall()
+
+        return self._build_block(block, tx_inputs, tx_outputs)
+
+    def get_block_by_index(self, i: int):
+        self.cursor.execute('select * from blocks where idx=?', (i,))
+        block = self.cursor.fetchone()
+
+        h = block[0]
+        self.cursor.execute('select * from transaction_inputs where parent_block=?', (h,))
+        tx_inputs = self.cursor.fetchall()
+
+        self.cursor.execute('select * from transaction_outputs where parent_block=?', (h,))
+        tx_outputs = self.cursor.fetchall()
+
+        return self._build_block(block, tx_inputs, tx_outputs)
+
+    def get_transaction_by_hash(self, h: str):
+        self.cursor.execute('select * from transaction_inputs where hash=?', (h,))
+        tx_input = self.cursor.fetchone()
+
+        self.cursor.execute('select * from transaction_outputs where hash=?', (h,))
+        tx_output = self.cursor.fetchone()
+
+        tx_hash, _, idx, sender, sig, contract, func, args = tx_input
+        args_unpacked = json.loads(args)
+
+        _, _, _, status, updates = tx_output
+        updates_unpacked = json.loads(updates)
+
+        # Build the dict
+        tx = {
+            'hash': tx_hash,
+            'index': idx,
+            'input': {
+                'sender': sender,
+                'signature': sig,
+                'payload': {
+                    'contract': contract,
+                    'function': func,
+                    'arguments': args_unpacked
+                }
+            },
+            'output': {
+                'status': status,
+                'updates': updates_unpacked
+            }
+        }
+
+        return tx
 
     def insert_block(self, b: dict):
         self.cursor.execute('insert into blocks values (?, ?)', (b['hash'], b['index']))
