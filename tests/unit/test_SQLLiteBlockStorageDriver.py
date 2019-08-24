@@ -2,10 +2,8 @@ from unittest import TestCase
 from contracting.db.chain import SQLLiteBlockStorageDriver
 from pprint import pprint
 
-class TestSQLLiteBlockStorageDriver(TestCase):
-    def test_init(self):
-        chain = SQLLiteBlockStorageDriver()
 
+class TestSQLLiteBlockStorageDriver(TestCase):
     def test_insert_block(self):
         chain = SQLLiteBlockStorageDriver()
         b = {'hash': 'hello',

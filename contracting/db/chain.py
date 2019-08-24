@@ -1,6 +1,7 @@
 import sqlite3
 import json
 
+
 class BlockStorageDriver:
     def get_block_by_hash(self, h: str):
         raise NotImplementedError
