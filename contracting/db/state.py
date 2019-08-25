@@ -1,28 +1,5 @@
-from . import filters
-
-
 class Connection:
     def execute(self, statement: str):
-        raise NotImplementedError
-
-
-class Result:
-    def __init__(self, result: bool, connection: Connection):
-        self.result = result
-        self.connection = connection
-
-
-class ReadResult(Result):
-    def __init__(self, result: bool, connection: Connection):
-        super().__init__(result, connection)
-
-    def fetch_one(self):
-        raise NotImplementedError
-
-    def fetch_all(self):
-        raise NotImplementedError
-
-    def filter(self, filter: filters.Filter) -> Result:
         raise NotImplementedError
 
 
