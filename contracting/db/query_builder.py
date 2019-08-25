@@ -58,3 +58,20 @@ def build_select(columns={}, name=None, filters=[]):
     s += ';'
 
     return s
+
+
+def build_update(name, sets={}, filters=[]):
+    q = 'UPDATE {} SET '.format(name)
+
+    for k, v in sets.items():
+        q += '{} = {} AND '.format(k, v)
+    q = q[:-5]
+
+    q += ' {}'.format(build_where(filters))
+
+    if q[-1] == ' ':
+        q = q[:-1]
+
+    q += ';'
+
+    return q

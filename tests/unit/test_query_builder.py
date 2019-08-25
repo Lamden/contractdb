@@ -56,3 +56,19 @@ class TestQueryBuilder(TestCase):
     def test_build_select_with_multi_where(self):
         s = query_builder.build_select(columns={}, name='test', filters=['test = 100', 'hello > 1'])
         self.assertEqual(s, 'SELECT * FROM test WHERE test = 100 AND hello > 1;')
+
+    def test_build_update(self):
+        s = query_builder.build_update(name='test', sets={'test': '100', 'hello': '1'})
+        self.assertEqual(s, 'UPDATE test SET test = 100 AND hello = 1;')
+
+    def test_build_update_single(self):
+        s = query_builder.build_update(name='test', sets={'test': '100'})
+        self.assertEqual(s, 'UPDATE test SET test = 100;')
+
+    def test_build_update_where(self):
+        s = query_builder.build_update(name='test', sets={'test': '100'}, filters=['a = 10'])
+        self.assertEqual(s, 'UPDATE test SET test = 100 WHERE a = 10;')
+
+    def test_build_update_multi_where(self):
+        s = query_builder.build_update(name='test', sets={'test': '100'}, filters=['a = 10', 'b > 20', 'c != 3'])
+        self.assertEqual(s, 'UPDATE test SET test = 100 WHERE a = 10 AND b > 20 AND c != 3;')

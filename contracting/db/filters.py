@@ -3,26 +3,35 @@ class Filter:
         self.obj1 = obj1
         self.obj2 = obj2
 
+    def repr(self):
+        raise NotImplementedError
+
 
 class Eq(Filter):
-    pass
+    def repr(self):
+        return '{} = {}'.format(self.obj1, self.obj2)
 
 
 class Not(Filter):
-    pass
+    def repr(self):
+        return '{} != {}'.format(self.obj1, self.obj2)
 
 
 class Gt(Filter):
-    pass
+    def repr(self):
+        return '{} > {}'.format(self.obj1, self.obj2)
 
 
 class Gte(Filter):
-    pass
+    def repr(self):
+        return '{} >= {}'.format(self.obj1, self.obj2)
 
 
 class Lt(Filter):
-    pass
+    def repr(self):
+        return '{} < {}'.format(self.obj1, self.obj2)
 
 
 class Lte(Filter):
-    pass
+    def repr(self):
+        return '{} <= {}'.format(self.obj1, self.obj2)
