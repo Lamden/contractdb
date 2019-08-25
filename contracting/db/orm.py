@@ -4,6 +4,7 @@ from .. import config
 
 driver = rt.env.get('__Driver') or ContractDriver()
 
+
 class Datum:
     def __init__(self, contract, name, driver: ContractDriver):
         self._driver = driver

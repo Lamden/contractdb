@@ -1,3 +1,6 @@
+from . import filters
+
+
 def build_parenthesis(i):
     s = '('
     for i in range(i - 1):
@@ -31,7 +34,7 @@ def build_where(filters=[]):
     if len(filters) > 0:
         s += 'WHERE '
         for f in filters:
-            s += f
+            s += f.repr()
             s += ' AND '
         s = s[:-5]
 
