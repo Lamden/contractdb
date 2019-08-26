@@ -1,17 +1,21 @@
 from collections import OrderedDict
 from . import filters
 from . import state
+from . import query_builder
+
 
 class Table:
-    def __init__(self, schema: dict):
+    def __init__(self, name: str, schema: dict, connection: state.Connection):
+        self.name = name
         self.schema = OrderedDict(schema)
         self.primary_key = list(self.schema.items())[0]
+        self.connection = connection
 
     # CRUD
     def insert(self, obj: dict) -> state.Result:
         raise NotImplementedError
 
-    def select(self, keys: set, filters: filters.Filter) -> state.ReadResult:
+    def select(self, columns: set, filters: filters.Filter) -> state.ReadResult:
         raise NotImplementedError
 
     def update(self, obj: dict, filters: filters.Filter) -> state.ReadResult:
@@ -25,4 +29,28 @@ class Table:
         raise NotImplementedError
 
     def set(self, key: str, value: dict) -> bool:
+        raise NotImplementedError
+
+
+class SQLTable(Table):
+    def __init__(self, name: str, schema: dict, connection: state.Connection):
+        super().__init__(name, schema, connection)
+
+        self.connection.execute(
+            query_builder.build_create_table_query(name=self.name, values=self.schema)
+        )
+
+    def insert(self, obj: dict):
+        q = query_builder.build_insert_into(self.name, obj)
+        self.connection.execute(q)
+
+    def select(self, columns: set, filters: filters.Filter):
+        q = query_builder.build_select(name=self.name, columns=columns, filters=filters)
+        self.connection.execute(q)
+
+    def update(self, sets={}, filters=[]):
+        q = query_builder.build_update(name=self.name, sets=sets, filters=filters)
+        self.connection.execute(q)
+
+    def delete(self):
         raise NotImplementedError

@@ -41,7 +41,7 @@ def build_where(filters=[]):
     return s
 
 
-def build_select(columns={}, name=None, filters=[]):
+def build_select(name=None, columns={}, filters=[]):
     s = 'SELECT '
 
     if len(columns) == 0:
