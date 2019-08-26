@@ -11,6 +11,7 @@ from .state import SQLSpaceStorageDriver
 driver = rt.env.get('__Driver') or ContractDriver()
 spaces = rt.env.get('__Spaces') or SQLSpaceStorageDriver()
 
+
 class Contract:
     def __init__(self, driver: ContractDriver=driver):
         self._driver = driver

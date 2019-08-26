@@ -1,6 +1,7 @@
 from unittest import TestCase
 from contracting.db import state
 import sqlite3
+import os
 
 
 class TestSQLConnection(TestCase):
@@ -195,3 +196,40 @@ class TestSQLConnection(TestCase):
 
         self.assertEqual(res[0], code)
         self.assertEqual(res[1], compiled)
+
+    def test_return_source_code_from_state_returns_code_str(self):
+        s = state.SQLSpaceStorageDriver()
+
+        contract = 'stubucks'
+        code = 'print("hello")'
+        compiled = b'123'
+
+        s.create_space(contract, code, compiled)
+
+        self.assertEqual(s.source_code_for_space('stubucks'), code)
+
+    def test_return_compiled_from_state_returns_bytecode(self):
+        s = state.SQLSpaceStorageDriver()
+
+        contract = 'stubucks'
+        code = 'print("hello")'
+        compiled = b'123'
+
+        s.create_space(contract, code, compiled)
+
+        self.assertEqual(s.compiled_code_for_space('stubucks'), compiled)
+
+    def test_deleting_space_removes_it_from_os(self):
+        s = state.SQLSpaceStorageDriver()
+
+        contract = 'stubucks'
+        code = 'print("hello")'
+        compiled = b'123'
+
+        s.create_space(contract, code, compiled)
+
+        self.assertTrue(os.path.exists('./stubucks.db'))
+
+        s.delete_space('stubucks')
+
+        self.assertFalse(os.path.exists('./stubucks.db'))

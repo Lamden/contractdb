@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 
 class Connection:
@@ -113,3 +114,17 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
         if space.isalpha():
             db = sqlite3.connect('{}{}.db'.format(self.root, space))
             return SQLConnection(connection=db)
+
+    def delete_space(self, space: str):
+        if space.isalpha():
+            os.remove('{}{}.db'.format(self.root, space))
+
+    def source_code_for_space(self, space: str):
+        conn = self.connect_to_space(space=space)
+        res = conn.execute('select source from contract')
+        return res.fetchone()[0]
+
+    def compiled_code_for_space(self, space: str):
+        conn = self.connect_to_space(space=space)
+        res = conn.execute('select compiled from contract')
+        return res.fetchone()[0]

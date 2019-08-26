@@ -5,6 +5,7 @@ from importlib.abc import Loader, MetaPathFinder, PathEntryFinder
 from importlib import invalidate_caches, __import__
 from importlib.machinery import ModuleSpec
 from ..db.driver import ContractDriver
+from ..db.state import SQLSpaceStorageDriver
 from ..stdlib import env
 from ..execution.runtime import rt
 from ..db.orm import Variable, Hash
@@ -92,6 +93,59 @@ class DatabaseLoader(Loader):
 
         if MODULE_CACHE.get(module.__name__) is None:
             code = self.d.get_compiled(module.__name__)
+            if code is None:
+                raise ImportError("Module {} not found".format(module.__name__))
+
+            if type(code) != bytes:
+                code = bytes.fromhex(code)
+
+            code = marshal.loads(code)
+            MODULE_CACHE[module.__name__] = code
+
+        if code is None:
+            raise ImportError("Module {} not found".format(module.__name__))
+
+        scope = env.gather()
+        scope.update(rt.env)
+
+        ctx = ModuleType('context')
+
+        ctx.caller = rt.ctx[-1]
+        ctx.this = module.__name__
+        ctx.signer = rt.ctx[0]
+
+        scope.update({'ctx': ctx})
+        scope.update({'__contract__': True})
+
+        rt.ctx.append(module.__name__)
+
+        # execute the module with the std env and update the module to pass forward
+        exec(code, scope)
+
+        # Update the module's attributes with the new scope
+        vars(module).update(scope)
+        del vars(module)['__builtins__']
+
+        rt.loaded_modules.append(rt.ctx.pop())
+
+    def module_repr(self, module):
+        return '<module {!r} (smart contract)>'.format(module.__name__)
+
+
+class SQLDatabaseLoader(Loader):
+    def __init__(self):
+        self.s = SQLSpaceStorageDriver()
+
+    def create_module(self, spec):
+        return None
+
+    def exec_module(self, module):
+
+        # fetch the individual contract
+        code = MODULE_CACHE.get(module.__name__)
+
+        if MODULE_CACHE.get(module.__name__) is None:
+            code = self.s.compiled_code_for_space(module.__name__)
             if code is None:
                 raise ImportError("Module {} not found".format(module.__name__))
 

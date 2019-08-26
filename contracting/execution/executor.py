@@ -3,6 +3,7 @@ import decimal
 from contracting.logger import get_logger
 from . import runtime
 from ..db.driver import ContractDriver
+from ..db.state import SQLSpaceStorageDriver
 from ..execution.module import install_database_loader, uninstall_builtins
 from .. import config
 
@@ -13,7 +14,6 @@ import nacl.signing
 import nacl.exceptions
 
 log = get_logger('Executor')
-
 
 # # Support other signature schemes here
 class Executor:
