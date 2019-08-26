@@ -1,9 +1,10 @@
 from unittest import TestCase
 from contracting.db.driver import ContractDriver
-from contracting.execution.executor import Executor
+from contracting.execution.executor import Executor, Engine
 from contracting.compilation.compiler import ContractingCompiler
-
+from contracting.utils import make_tx
 from contracting.db.state import SQLSpaceStorageDriver
+import nacl.signing
 import marshal
 
 def submission_kwargs_for_file(f):
@@ -35,6 +36,8 @@ class TestExecutor(TestCase):
     def setUp(self):
         self.s = SQLSpaceStorageDriver()
 
+        self.key = nacl.signing.SigningKey.generate()
+
         with open('../../contracting/contracts/submission_sql.s.py') as f:
             contract = f.read()
 
@@ -48,7 +51,7 @@ class TestExecutor(TestCase):
         self.s.delete_space(space='submission')
 
     def test_submission(self):
-        e = Executor(metering=False)
+        e = Engine()
 
         code = '''@export
 def d():
@@ -61,7 +64,9 @@ def d():
             'code': code
         }
 
-        e.execute(**TEST_SUBMISSION_KWARGS, kwargs=kwargs)
+        tx = make_tx(self.key, contract='submission', func='submit_contract', arguments=kwargs)
+
+        e.run(tx)
 
         new_code = self.compiler.parse_to_code(code)
 

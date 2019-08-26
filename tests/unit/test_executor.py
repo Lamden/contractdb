@@ -5,7 +5,7 @@ import glob
 # Import ContractDriver and AbstractDatabaseDriver for property type
 # assertions for self.e._driver
 from contracting.db.driver import AbstractDatabaseDriver, ContractDriver
-from contracting.execution.module import DatabaseFinder
+from contracting.execution.module import DatabaseFinder, SQLDatabaseFinder
 from contracting.compilation.compiler import ContractingCompiler
 
 class TestExecutor(unittest.TestCase):
@@ -30,6 +30,7 @@ driver = ContractDriver(db=0)
 class DBTests(unittest.TestCase):
     def setUp(self):
         sys.meta_path.append(DatabaseFinder)
+        sys.meta_path.append(SQLDatabaseFinder)
         driver.flush()
         contracts = glob.glob('./test_sys_contracts/*.py')
         self.author = b'unittest'
@@ -53,6 +54,7 @@ class DBTests(unittest.TestCase):
 
     def tearDown(self):
         sys.meta_path.remove(DatabaseFinder)
+        sys.meta_path.remove(SQLDatabaseFinder)
         driver.flush()
 
     def test_base_execute(self):

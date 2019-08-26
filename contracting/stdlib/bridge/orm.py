@@ -1,5 +1,5 @@
 from ...db.orm import Variable, Hash, ForeignVariable, ForeignHash
-from ...db.contract import Contract
+from ...db.contract import Contract, SQLContract
 from ...execution.runtime import rt
 
 
@@ -38,11 +38,17 @@ class C(Contract):
         super().__init__(*args, **kwargs)
 
 
+class S(SQLContract):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 # Define the locals that will be available for smart contracts at runtime
 exports = {
     'Variable': V,
     'Hash': H,
     'ForeignVariable': FV,
     'ForeignHash': FH,
-    '__Contract': C
+    '__Contract': C,
+    '__SQLContract': S
 }
