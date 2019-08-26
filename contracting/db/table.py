@@ -12,16 +12,16 @@ class Table:
         self.connection = connection
 
     # CRUD
-    def insert(self, obj: dict) -> state.Result:
+    def insert(self, obj: dict) -> state.ResultSet:
         raise NotImplementedError
 
-    def select(self, columns: set, filters: filters.Filter) -> state.ReadResult:
+    def select(self, columns: set, filters: filters.Filter) -> state.ResultSet:
         raise NotImplementedError
 
-    def update(self, obj: dict, filters: filters.Filter) -> state.ReadResult:
+    def update(self, obj: dict, filters: filters.Filter) -> state.ResultSet:
         raise NotImplementedError
 
-    def delete(self, obj: dict, filters: filters.Filter) -> state.Result:
+    def delete(self, obj: dict, filters: filters.Filter) -> state.ResultSet:
         raise NotImplementedError
 
     # KV
@@ -42,15 +42,15 @@ class SQLTable(Table):
 
     def insert(self, obj: dict):
         q = query_builder.build_insert_into(self.name, obj)
-        self.connection.execute(q)
+        return self.connection.execute(q)
 
     def select(self, columns: set, filters: filters.Filter):
         q = query_builder.build_select(name=self.name, columns=columns, filters=filters)
-        self.connection.execute(q)
+        return self.connection.execute(q)
 
     def update(self, sets={}, filters=[]):
         q = query_builder.build_update(name=self.name, sets=sets, filters=filters)
-        self.connection.execute(q)
+        return self.connection.execute(q)
 
     def delete(self):
-        raise NotImplementedError
+        pass

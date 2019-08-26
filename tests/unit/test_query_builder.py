@@ -78,3 +78,18 @@ class TestQueryBuilder(TestCase):
                                                                                    filters.Not('c', 3)])
 
         self.assertEqual(s, 'UPDATE test SET test = 100 WHERE a = 10 AND b > 20 AND c != 3;')
+
+    def test_build_delete(self):
+        s = query_builder.build_delete(name='test')
+        self.assertEqual(s, 'DELETE FROM test;')
+
+    def test_build_delete_single_filter(self):
+        s = query_builder.build_delete(name='test', filters=[filters.Eq('a', 10)])
+        self.assertEqual(s, 'DELETE FROM test WHERE a = 10;')
+
+    def test_build_delete_multi_filters(self):
+        s = query_builder.build_delete(name='test', filters=[filters.Eq('a', 10),
+                                                             filters.Gt('b', 20),
+                                                             filters.Not('c', 3)])
+
+        self.assertEqual(s, 'DELETE FROM test WHERE a = 10 AND b > 20 AND c != 3;')

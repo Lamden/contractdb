@@ -78,3 +78,15 @@ def build_update(name, sets={}, filters=[]):
     q += ';'
 
     return q
+
+
+def build_delete(name, filters=[]):
+    q = 'DELETE FROM {}'.format(name)
+
+    if len(filters) > 0:
+        q += ' '
+        q += build_where(filters)
+
+    q += ';'
+
+    return q
