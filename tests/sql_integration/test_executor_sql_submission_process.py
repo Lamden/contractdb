@@ -36,19 +36,28 @@ class TestExecutor(TestCase):
     def setUp(self):
         self.s = SQLSpaceStorageDriver()
 
+        try:
+            self.s.delete_space(space='submissionsql')
+            self.s.delete_space(space='stubucks')
+        except FileNotFoundError:
+            pass
+
         self.key = nacl.signing.SigningKey.generate()
 
-        with open('../../contracting/contracts/submission_sql.s.py') as f:
+        with open('../../contracting/contracts/submissionsql.s.py') as f:
             contract = f.read()
 
-        self.s.create_space(space='submission',
+        self.s.create_space(space='submissionsql',
                             source_code=contract,
                             compiled_code=marshal.dumps(contract))
+
+        print(self.s.source_code_for_space('submissionsql'))
 
         self.compiler = ContractingCompiler()
 
     def tearDown(self):
-        self.s.delete_space(space='submission')
+        self.s.delete_space(space='submissionsql')
+        self.s.delete_space(space='stubucks')
 
     def test_submission(self):
         e = Engine()
@@ -64,15 +73,14 @@ def d():
             'code': code
         }
 
-        tx = make_tx(self.key, contract='submission', func='submit_contract', arguments=kwargs)
+        tx = make_tx(self.key, contract='submissionsql', func='submit_contract', arguments=kwargs)
 
-        e.run(tx)
+        out = e.run(tx)
+        print(out)
 
         new_code = self.compiler.parse_to_code(code)
 
-        print(self.s.source_code_for_space('stubucks'))
-
-        self.assertEqual(self.s.get_contract('stubucks'), new_code)
+        self.assertEqual(self.s.source_code_for_space('stubucks'), new_code)
 
     def test_submission_then_function_call(self):
         e = Executor(metering=False)

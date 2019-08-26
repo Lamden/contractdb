@@ -228,8 +228,9 @@ class TestSQLConnection(TestCase):
 
         s.create_space(contract, code, compiled)
 
-        self.assertTrue(os.path.exists('./stubucks.db'))
+        self.assertTrue(os.path.exists(s.get_path_for_space(contract)))
 
         s.delete_space('stubucks')
 
-        self.assertFalse(os.path.exists('./stubucks.db'))
+        self.assertFalse(os.path.exists(s.get_path_for_space(contract)))
+

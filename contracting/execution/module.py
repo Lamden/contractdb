@@ -50,7 +50,7 @@ def uninstall_builtins():
 
 def install_database_loader():
     sys.meta_path.append(DatabaseFinder)
-    sys.meta_path.append(SQLDatabaseFinder)
+    #sys.meta_path.append(SQLDatabaseFinder)
 
 
 def uninstall_database_loader():
@@ -58,8 +58,8 @@ def uninstall_database_loader():
     if DatabaseFinder in sys.meta_path:
         sys.meta_path.remove(DatabaseFinder)
 
-    if SQLDatabaseFinder in sys.meta_path:
-        sys.meta_path.remove(SQLDatabaseFinder)
+    # if SQLDatabaseFinder in sys.meta_path:
+    #     sys.meta_path.remove(SQLDatabaseFinder)
 
 
 def install_system_contracts(directory=''):
@@ -75,8 +75,18 @@ def install_system_contracts(directory=''):
 class DatabaseFinder:
     def find_spec(self, fullname, path=None, target=None):
         if MODULE_CACHE.get(self) is None:
+            print('not in cache')
             if ContractDriver().get_contract(self) is None:
-                return None
+                print('not in redis')
+                try:
+                    if SQLSpaceStorageDriver().source_code_for_space(self) is None:
+                        print('not in spaces')
+                        return None
+                    else:
+                        return ModuleSpec(self, SQLDatabaseLoader())
+                except:
+                    return None
+                #return None
         return ModuleSpec(self, DatabaseLoader())
 
 
@@ -87,7 +97,7 @@ class SQLDatabaseFinder:
                 if SQLSpaceStorageDriver().source_code_for_space(self) is None:
                     return None
             except:
-                raise ImportError
+                return None
         return ModuleSpec(self, SQLSpaceStorageDriver())
 
 

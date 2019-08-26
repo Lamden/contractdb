@@ -98,12 +98,12 @@ class SQLConnection(Connection):
 
 
 class SQLSpaceStorageDriver(SpaceStorageDriver):
-    def __init__(self, root='./'):
+    def __init__(self, root=os.path.expanduser('~/contracts/')):
         self.root = root
 
     def create_space(self, space: str, source_code: str, compiled_code: bytes):
         if space.isalpha():
-            db = sqlite3.connect('{}{}.db'.format(self.root, space))
+            db = sqlite3.connect(self.get_path_for_space(space))
             db.execute('create table if not exists contract (source text, compiled blob)')
             db.execute('insert into contract values (?, ?)', (source_code, compiled_code))
             db.commit()
@@ -112,12 +112,12 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
 
     def connect_to_space(self, space: str):
         if space.isalpha():
-            db = sqlite3.connect('{}{}.db'.format(self.root, space))
+            db = sqlite3.connect(self.get_path_for_space(space))
             return SQLConnection(connection=db)
 
     def delete_space(self, space: str):
         if space.isalpha():
-            os.remove('{}{}.db'.format(self.root, space))
+            os.remove(self.get_path_for_space(space))
 
     def source_code_for_space(self, space: str):
         conn = self.connect_to_space(space=space)
@@ -128,3 +128,6 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
         conn = self.connect_to_space(space=space)
         res = conn.execute('select compiled from contract')
         return res.fetchone()[0]
+
+    def get_path_for_space(self, space):
+        return os.path.join(self.root, '{}.db'.format(space))
