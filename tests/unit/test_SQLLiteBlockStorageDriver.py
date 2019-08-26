@@ -1,6 +1,5 @@
 from unittest import TestCase
 from contracting.db.chain import SQLLiteBlockStorageDriver
-from pprint import pprint
 
 
 class TestSQLLiteBlockStorageDriver(TestCase):

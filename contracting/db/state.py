@@ -1,8 +1,7 @@
 import sqlite3
-import os
 
 class Connection:
-    def execute(self, statement: str):
+    def execute(self, statement: str, *args):
         raise NotImplementedError
 
 
@@ -31,13 +30,69 @@ class ResultSet:
         raise NotImplementedError
 
 
+class SQLResultSet(ResultSet):
+    def __init__(self, cursor: sqlite3.Cursor):
+        self.cursor = cursor
+        self.retrieved = []
+        self.i = 0
+
+        self.fully_iterated = False
+
+    def fetchone(self):
+        to_add = self.cursor.fetchone()
+        if to_add is not None:
+            self.retrieved.append(to_add)
+            self.i += 1
+            return self.retrieved[-1]
+
+        self.fully_iterated = True
+        return to_add
+
+    def fetchall(self):
+        to_add = self.cursor.fetchall()
+        self.retrieved.extend(to_add)
+        self.i += len(to_add)
+        self.fully_iterated = True
+        return self.retrieved
+
+    def __next__(self):
+        if self.fully_iterated:
+            return next(self.retrieved)
+
+        r = self.fetchone()
+        if r is None:
+            raise StopIteration
+        return r
+
+    def __iter__(self):
+        if self.fully_iterated:
+            return iter(self.retrieved)
+
+        return self
+
+    def __getitem__(self, item):
+        if item >= self.i:
+            r = None
+
+            while item >= self.i:
+                r = self.fetchone()
+
+                if r is None:
+                    raise IndexError
+
+            return r
+        else:
+            return self.retrieved[item]
+
+
 class SQLConnection(Connection):
     def __init__(self, connection: sqlite3.Connection):
         self.connection = connection
 
-    def execute(self, statement: str):
-        self.connection.execute(statement)
+    def execute(self, statement: str, *args):
+        res = self.connection.execute(statement, *args)
         self.connection.commit()
+        return SQLResultSet(cursor=res)
 
 
 class SQLSpaceStorageDriver(SpaceStorageDriver):
@@ -48,7 +103,7 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
         if space.isalpha():
             db = sqlite3.connect('{}{}.db'.format(self.root, space))
             db.execute('create table if not exists contract (source text, compiled blob)')
-            db.execute('insert into contract values (?, ?)', source_code, compiled_code)
+            db.execute('insert into contract values (?, ?)', (source_code, compiled_code))
             db.commit()
             return True
         return False
@@ -57,36 +112,3 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
         if space.isalpha():
             db = sqlite3.connect('{}{}.db'.format(self.root, space))
             return SQLConnection(connection=db)
-
-
-class SQLResultSet(ResultSet):
-    def __init__(self, cursor: sqlite3.Cursor):
-        self.cursor = cursor
-        self.retrieved = []
-        self.i = 0
-
-    def fetchone(self):
-        to_add = self.cursor.fetchone()
-        self.retrieved.append(to_add)
-        self.i += 1
-        return self.retrieved[-1]
-
-    def fetchall(self):
-        to_add = self.cursor.fetchall()
-        self.retrieved.extend(to_add)
-        self.i += len(to_add)
-        return self.retrieved
-
-    def __next__(self):
-        return self.fetchone()
-
-    def __iter__(self):
-        return self
-
-    def __getitem__(self, item):
-        if item >= self.i:
-            while item >= self.i:
-                self.fetchone()
-            return self.retrieved[-1]
-        else:
-            return self.retrieved[item]
