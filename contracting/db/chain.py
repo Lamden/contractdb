@@ -28,6 +28,9 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
     def __init__(self, filename='blocks.db'):
         self.conn = sqlite3.connect(filename)
         self.cursor = self.conn.cursor()
+        self.setup()
+
+    def setup(self):
         self.cursor.execute('create table if not exists blocks (hash text primary key, idx integer)')
 
         self.cursor.execute('create table if not exists transaction_inputs'
