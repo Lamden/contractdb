@@ -1,5 +1,6 @@
 import sqlite3
 
+
 class Connection:
     def execute(self, statement: str, *args):
         raise NotImplementedError
