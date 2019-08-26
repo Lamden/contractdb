@@ -21,14 +21,7 @@ class Table:
     def update(self, obj: dict, filters: filters.Filter) -> state.ResultSet:
         raise NotImplementedError
 
-    def delete(self, obj: dict, filters: filters.Filter) -> state.ResultSet:
-        raise NotImplementedError
-
-    # KV
-    def get(self, key: str) -> dict:
-        raise NotImplementedError
-
-    def set(self, key: str, value: dict) -> bool:
+    def delete(self, filters: filters.Filter) -> state.ResultSet:
         raise NotImplementedError
 
 
@@ -52,5 +45,7 @@ class SQLTable(Table):
         q = query_builder.build_update(name=self.name, sets=sets, filters=filters)
         return self.connection.execute(q)
 
-    def delete(self):
-        pass
+    def delete(self, filters=[]):
+        q = query_builder.build_delete(name=self.name, filters=filters)
+        return self.connection.execute(q)
+
