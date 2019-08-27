@@ -3,6 +3,7 @@ import os
 from . import filters
 from . import query_builder
 
+
 class ResultSet:
     def fetchone(self) -> dict:
         raise NotImplementedError
@@ -30,6 +31,23 @@ class ContractStorageDriver:
         raise NotImplementedError
 
     def connect_to_contract_space(self, space: str) -> Connection:
+        raise NotImplementedError
+
+
+class Driver:
+    def insert(self, contract, name, obj: dict) -> ResultSet:
+        raise NotImplementedError
+
+    def select(self, contract, name, columns: set, filters: filters.Filter) -> ResultSet:
+        raise NotImplementedError
+
+    def update(self, contract, name, sets: dict, filters: filters.Filter) -> ResultSet:
+        raise NotImplementedError
+
+    def delete(self, contract, name, filters: filters.Filter) -> ResultSet:
+        raise NotImplementedError
+
+    def create_table(self, contract, name, values):
         raise NotImplementedError
 
 
