@@ -7,6 +7,8 @@ from contracting.db.state import SQLContractStorageDriver
 import nacl.signing
 import marshal
 
+from contracting.db.state import SQLDriver
+
 from functools import partial
 
 
@@ -136,17 +138,16 @@ def select(i):
         self.assertEqual(k['code'], code)
 
     def test_table_insert(self):
-        e = Engine()
+        e = Engine(driver=SQLDriver())
 
         r = e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
 
-        print(r)
-
-        e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
+        r = e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
             'i': 1000,
             'j': 'sup'
         }))
 
+        print(r)
         conn = self.s.connect_to_contract_space('submissionsql')
 
 

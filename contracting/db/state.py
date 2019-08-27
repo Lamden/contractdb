@@ -53,31 +53,40 @@ class Driver:
 class SQLDriver:
     def __init__(self):
         self.storage = SQLContractStorageDriver()
+        self.sets = []
 
     def insert(self, contract, name, obj: dict) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_insert_into(name, obj)
+        self.sets.append((q, obj))
         return conn.execute(q, obj)
 
     def select(self, contract, name, columns: set={}, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_select(name=name, columns=columns, filters=filters)
+        self.sets.append(q)
         return conn.execute(q)
 
     def update(self, contract, name, sets: dict, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_update(name=name, sets=sets, filters=filters)
+        self.sets.append(q)
         return conn.execute(q)
 
     def delete(self, contract, name, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_delete(name=name, filters=filters)
+        self.sets.append(q)
         return conn.execute(q)
 
     def create_table(self, contract, name, values):
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_create_table_query(name=name, values=values)
+        self.sets.append(q)
         return conn.execute(q)
+
+    def clear_sets(self):
+        self.sets = []
 
 
 class SQLResultSet(ResultSet):
@@ -158,23 +167,19 @@ class SQLContractStorageDriver(ContractStorageDriver):
         self.root = root
 
     def create_contract_space(self, space: str, source_code: str, compiled_code: bytes):
-        if space.isalpha():
-            db = sqlite3.connect(self.get_path_for_space(space))
-            db.execute('create table if not exists contract (source text, compiled blob)')
-            db.execute('insert into contract values (?, ?)', (source_code, compiled_code))
-            db.commit()
-            return True
-        return False
+        db = sqlite3.connect(self.get_path_for_space(space))
+        db.execute('create table if not exists contract (source text, compiled blob)')
+        db.execute('insert into contract values (?, ?)', (source_code, compiled_code))
+        db.commit()
+        return True
 
     def connect_to_contract_space(self, space: str):
-        if space.isalpha():
-            db = sqlite3.connect(self.get_path_for_space(space))
-            db.row_factory = dict_factory
-            return SQLConnection(connection=db)
+        db = sqlite3.connect(self.get_path_for_space(space))
+        db.row_factory = dict_factory
+        return SQLConnection(connection=db)
 
     def delete_space(self, space: str):
-        if space.isalpha():
-            os.remove(self.get_path_for_space(space))
+        os.remove(self.get_path_for_space(space))
 
     def source_code_for_space(self, space: str):
         conn = self.connect_to_contract_space(space=space)
