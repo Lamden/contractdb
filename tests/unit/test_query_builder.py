@@ -1,6 +1,5 @@
 from unittest import TestCase
 from contracting.db import query_builder
-from contracting.db import filters
 from contracting.db import types
 from contracting.db.filters import Filters
 

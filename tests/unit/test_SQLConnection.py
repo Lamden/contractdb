@@ -1,7 +1,7 @@
 from unittest import TestCase
 from contracting.db import state
 from contracting.db import types
-from contracting.db import filters
+from contracting.db.filters import Filters
 import sqlite3
 import os
 
@@ -282,7 +282,7 @@ class TestSQLConnection(TestCase):
 
         d.insert('stubucks', 'testing', obj)
 
-        obj_got = d.select('stubucks', 'testing', filters=[filters.Eq('hello', 'hi')])
+        obj_got = d.select('stubucks', 'testing', filters=[Filters.eq('hello', 'hi')])
 
         res = obj_got.fetchone()
 

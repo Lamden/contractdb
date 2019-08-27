@@ -63,7 +63,6 @@ class SQLDriver:
     def select(self, contract, name, columns: set={}, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_select(name=name, columns=columns, filters=filters)
-        print(q)
         return conn.execute(q)
 
     def update(self, contract, name, sets: dict, filters=[]) -> ResultSet:
@@ -85,6 +84,7 @@ class SQLDriver:
 class SQLResultSet(ResultSet):
     def __init__(self, cursor: sqlite3.Cursor):
         self.cursor = cursor
+
         self.retrieved = []
         self.i = 0
 
@@ -147,6 +147,13 @@ class SQLConnection(Connection):
         return SQLResultSet(cursor=res)
 
 
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
+
 class SQLContractStorageDriver(ContractStorageDriver):
     def __init__(self, root=os.path.expanduser('~/contracts/')):
         self.root = root
@@ -163,6 +170,7 @@ class SQLContractStorageDriver(ContractStorageDriver):
     def connect_to_contract_space(self, space: str):
         if space.isalpha():
             db = sqlite3.connect(self.get_path_for_space(space))
+            db.row_factory = dict_factory
             return SQLConnection(connection=db)
 
     def delete_space(self, space: str):
