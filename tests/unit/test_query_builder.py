@@ -2,6 +2,7 @@ from unittest import TestCase
 from contracting.db import query_builder
 from contracting.db import filters
 from contracting.db import types
+from contracting.db.filters import Filters
 
 
 class TestQueryBuilder(TestCase):
@@ -38,11 +39,11 @@ class TestQueryBuilder(TestCase):
         self.assertEqual(s, 'CREATE TABLE IF NOT EXISTS test (name INTEGER, another TEXT, one BLOB);')
 
     def test_build_where(self):
-        s = query_builder.build_where([filters.Eq('word', 100)])
+        s = query_builder.build_where([Filters.eq('word', 100)])
         self.assertEqual(s, 'WHERE word = 100')
 
     def test_build_where_multiple(self):
-        s = query_builder.build_where([filters.Eq('word', 100), filters.Gt('something', 10)])
+        s = query_builder.build_where([Filters.eq('word', 100), Filters.gt('something', 10)])
         self.assertEqual(s, 'WHERE word = 100 AND something > 10')
 
     def test_build_select(self):
@@ -58,12 +59,12 @@ class TestQueryBuilder(TestCase):
         self.assertEqual(s, 'SELECT something, another, ones FROM test;')
 
     def test_build_select_with_single_where(self):
-        s = query_builder.build_select(columns={}, name='test', filters=[filters.Eq('test', 100)])
+        s = query_builder.build_select(columns={}, name='test', filters=[Filters.eq('test', 100)])
         self.assertEqual(s, 'SELECT * FROM test WHERE test = 100;')
 
     def test_build_select_with_multi_where(self):
-        s = query_builder.build_select(columns={}, name='test', filters=[filters.Eq('test', 100),
-                                                                         filters.Gt('hello', 1)])
+        s = query_builder.build_select(columns={}, name='test', filters=[Filters.eq('test', 100),
+                                                                         Filters.gt('hello', 1)])
 
         self.assertEqual(s, 'SELECT * FROM test WHERE test = 100 AND hello > 1;')
 
@@ -76,13 +77,13 @@ class TestQueryBuilder(TestCase):
         self.assertEqual(s, 'UPDATE test SET test = 100;')
 
     def test_build_update_where(self):
-        s = query_builder.build_update(name='test', sets={'test': '100'}, filters=[filters.Eq('a', 10)])
+        s = query_builder.build_update(name='test', sets={'test': '100'}, filters=[Filters.eq('a', 10)])
         self.assertEqual(s, 'UPDATE test SET test = 100 WHERE a = 10;')
 
     def test_build_update_multi_where(self):
-        s = query_builder.build_update(name='test', sets={'test': '100'}, filters=[filters.Eq('a', 10),
-                                                                                   filters.Gt('b', 20),
-                                                                                   filters.Not('c', 3)])
+        s = query_builder.build_update(name='test', sets={'test': '100'}, filters=[Filters.eq('a', 10),
+                                                                                   Filters.gt('b', 20),
+                                                                                   Filters.ne('c', 3)])
 
         self.assertEqual(s, 'UPDATE test SET test = 100 WHERE a = 10 AND b > 20 AND c != 3;')
 
@@ -91,12 +92,12 @@ class TestQueryBuilder(TestCase):
         self.assertEqual(s, 'DELETE FROM test;')
 
     def test_build_delete_single_filter(self):
-        s = query_builder.build_delete(name='test', filters=[filters.Eq('a', 10)])
+        s = query_builder.build_delete(name='test', filters=[Filters.eq('a', 10)])
         self.assertEqual(s, 'DELETE FROM test WHERE a = 10;')
 
     def test_build_delete_multi_filters(self):
-        s = query_builder.build_delete(name='test', filters=[filters.Eq('a', 10),
-                                                             filters.Gt('b', 20),
-                                                             filters.Not('c', 3)])
+        s = query_builder.build_delete(name='test', filters=[Filters.eq('a', 10),
+                                                             Filters.gt('b', 20),
+                                                             Filters.ne('c', 3)])
 
         self.assertEqual(s, 'DELETE FROM test WHERE a = 10 AND b > 20 AND c != 3;')

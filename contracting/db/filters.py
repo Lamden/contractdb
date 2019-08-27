@@ -35,3 +35,29 @@ class Lt(Filter):
 class Lte(Filter):
     def repr(self):
         return '{} <= {}'.format(self.obj1, self.obj2)
+
+
+class Filters:
+    @staticmethod
+    def eq(column, obj):
+        return '{} = {}'.format(column, obj)
+
+    @staticmethod
+    def ne(column, obj):
+        return '{} != {}'.format(column, obj)
+
+    @staticmethod
+    def gt(column, obj):
+        return '{} > {}'.format(column, obj)
+
+    @staticmethod
+    def gte(column, obj):
+        return '{} >= {}'.format(column, obj)
+
+    @staticmethod
+    def lt(column, obj):
+        return '{} < {}'.format(column, obj)
+
+    @staticmethod
+    def lte(column, obj):
+        return '{} <= {}'.format(column, obj)

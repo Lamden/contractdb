@@ -58,20 +58,20 @@ class SQLDriver:
     def insert(self, contract, name, obj: dict) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_insert_into(name, obj)
-        print(obj)
         return conn.execute(q, obj)
 
-    def select(self, contract, name, columns: set, filters: filters.Filter) -> ResultSet:
+    def select(self, contract, name, columns: set={}, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_select(name=name, columns=columns, filters=filters)
+        print(q)
         return conn.execute(q)
 
-    def update(self, contract, name, sets: dict, filters: filters.Filter) -> ResultSet:
+    def update(self, contract, name, sets: dict, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_update(name=name, sets=sets, filters=filters)
         return conn.execute(q)
 
-    def delete(self, contract, name, filters: filters.Filter) -> ResultSet:
+    def delete(self, contract, name, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_delete(name=self.name, filters=filters)
         return conn.execute(q)

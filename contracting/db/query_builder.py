@@ -42,7 +42,7 @@ def build_where(filters=[]):
     if len(filters) > 0:
         s += 'WHERE '
         for f in filters:
-            s += f.repr()
+            s += f
             s += ' AND '
         s = s[:-5]
 
