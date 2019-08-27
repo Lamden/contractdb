@@ -322,3 +322,31 @@ class TestSQLConnection(TestCase):
         }
 
         self.assertEqual(obj2, res)
+
+    def test_insert_and_delete_works(self):
+        s = state.SQLContractStorageDriver()
+
+        contract = 'stubucks'
+        code = 'print("hello")'
+        compiled = b'123'
+
+        s.create_contract_space(contract, code, compiled)
+
+        d = state.SQLDriver()
+        d.create_table('stubucks', 'testing', {
+            'hello': types.Text,
+            'there': types.Int
+        })
+
+        obj = {
+            'hello': 'hi',
+            'there': 123
+        }
+
+        d.insert('stubucks', 'testing', obj)
+
+        d.delete('stubucks', 'testing', filters=[Filters.eq('hello', 'hi')])
+
+        obj_got = d.select('stubucks', 'testing', filters=[Filters.eq('hello', 'hi')]).fetchone()
+
+        self.assertIsNone(obj_got)

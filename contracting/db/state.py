@@ -72,7 +72,7 @@ class SQLDriver:
 
     def delete(self, contract, name, filters=[]) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
-        q = query_builder.build_delete(name=self.name, filters=filters)
+        q = query_builder.build_delete(name=name, filters=filters)
         return conn.execute(q)
 
     def create_table(self, contract, name, values):
