@@ -153,13 +153,13 @@ class TestSQLConnection(TestCase):
         self.assertEqual(got, got2)
 
     def test_create_space_makes_accessible_db_with_correct_info_in_it(self):
-        s = state.SQLSpaceStorageDriver()
+        s = state.SQLContractStorageDriver()
 
         contract = 'stubucks'
         code = 'print("hello")'
         compiled = b'123'
 
-        s.create_space(contract, code, compiled)
+        s.create_contract_space(contract, code, compiled)
 
         db = sqlite3.connect('./stubucks.db')
 
@@ -171,24 +171,24 @@ class TestSQLConnection(TestCase):
         self.assertEqual(res[1], compiled)
 
     def test_no_non_alpha_contracts_allowed(self):
-        s = state.SQLSpaceStorageDriver()
+        s = state.SQLContractStorageDriver()
 
         contract = 'stubucks123'
         code = 'print("hello")'
         compiled = b'123'
 
-        self.assertFalse(s.create_space(contract, code, compiled))
+        self.assertFalse(s.create_contract_space(contract, code, compiled))
 
     def test_connect_to_space_returns_sql_connection_object(self):
-        s = state.SQLSpaceStorageDriver()
+        s = state.SQLContractStorageDriver()
 
         contract = 'stubucks'
         code = 'print("hello")'
         compiled = b'123'
 
-        s.create_space(contract, code, compiled)
+        s.create_contract_space(contract, code, compiled)
 
-        conn = s.connect_to_space(contract)
+        conn = s.connect_to_contract_space(contract)
 
         c = conn.execute('select * from contract')
 
@@ -198,35 +198,35 @@ class TestSQLConnection(TestCase):
         self.assertEqual(res[1], compiled)
 
     def test_return_source_code_from_state_returns_code_str(self):
-        s = state.SQLSpaceStorageDriver()
+        s = state.SQLContractStorageDriver()
 
         contract = 'stubucks'
         code = 'print("hello")'
         compiled = b'123'
 
-        s.create_space(contract, code, compiled)
+        s.create_contract_space(contract, code, compiled)
 
         self.assertEqual(s.source_code_for_space('stubucks'), code)
 
     def test_return_compiled_from_state_returns_bytecode(self):
-        s = state.SQLSpaceStorageDriver()
+        s = state.SQLContractStorageDriver()
 
         contract = 'stubucks'
         code = 'print("hello")'
         compiled = b'123'
 
-        s.create_space(contract, code, compiled)
+        s.create_contract_space(contract, code, compiled)
 
         self.assertEqual(s.compiled_code_for_space('stubucks'), compiled)
 
     def test_deleting_space_removes_it_from_os(self):
-        s = state.SQLSpaceStorageDriver()
+        s = state.SQLContractStorageDriver()
 
         contract = 'stubucks'
         code = 'print("hello")'
         compiled = b'123'
 
-        s.create_space(contract, code, compiled)
+        s.create_contract_space(contract, code, compiled)
 
         self.assertTrue(os.path.exists(s.get_path_for_space(contract)))
 

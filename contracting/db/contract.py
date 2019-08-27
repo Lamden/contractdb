@@ -6,10 +6,10 @@ from ..stdlib import env
 from .. import config
 import marshal
 
-from .state import SQLSpaceStorageDriver
+from .state import SQLContractStorageDriver
 
 driver = rt.env.get('__Driver') or ContractDriver()
-spaces = rt.env.get('__Spaces') or SQLSpaceStorageDriver()
+spaces = rt.env.get('__Spaces') or SQLContractStorageDriver()
 
 
 class Contract:
@@ -42,7 +42,7 @@ class Contract:
 
 
 class SQLContract:
-    def __init__(self, spaces: SQLSpaceStorageDriver=spaces):
+    def __init__(self, spaces: SQLContractStorageDriver=spaces):
         self._spaces = spaces
 
     def submit(self, name, code, constructor_args={}):
@@ -68,4 +68,4 @@ class SQLContract:
         code_obj = compile(code_str, '', 'exec')
         code_blob = marshal.dumps(code_obj)
 
-        self._spaces.create_space(space=name, source_code=code_str, compiled_code=code_blob)
+        self._spaces.create_contract_space(space=name, source_code=code_str, compiled_code=code_blob)

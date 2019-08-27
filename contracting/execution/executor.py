@@ -3,7 +3,7 @@ import decimal
 from contracting.logger import get_logger
 from . import runtime
 from ..db.driver import ContractDriver
-from ..db.state import SQLSpaceStorageDriver
+from ..db.state import SQLContractStorageDriver
 from ..execution.module import install_database_loader, uninstall_builtins
 from .. import config
 

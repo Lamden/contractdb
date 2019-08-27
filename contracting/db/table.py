@@ -5,11 +5,12 @@ from . import query_builder
 
 
 class Table:
-    def __init__(self, name: str, schema: dict, connection: state.Connection):
+    def __init__(self, contract, name, driver, schema):
+        self.contract = contract
         self.name = name
         self.schema = OrderedDict(schema)
         self.primary_key = list(self.schema.items())[0]
-        self.connection = connection
+        self.connection = driver
 
     # CRUD
     def insert(self, obj: dict) -> state.ResultSet:
@@ -26,10 +27,10 @@ class Table:
 
 
 class SQLTable(Table):
-    def __init__(self, name: str, schema: dict, connection: state.Connection):
-        super().__init__(name, schema, connection)
+    def __init__(self, contract, name, driver: state.SQLDriver, schema):
+        super().__init__(contract, name, driver, schema)
 
-        self.connection.execute(
+        self.connection.create_table(
             query_builder.build_create_table_query(name=self.name, values=self.schema)
         )
 

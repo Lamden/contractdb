@@ -10,4 +10,4 @@ def return_one:
     return 1
         '''
 
-        SQLContract.submit(name='test', code=code)
+        SQLContract().submit(name='test', code=code)

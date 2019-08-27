@@ -1,19 +1,7 @@
 import sqlite3
 import os
-
-
-class Connection:
-    def execute(self, statement: str, *args):
-        raise NotImplementedError
-
-
-class SpaceStorageDriver:
-    def create_space(self, space: str, source_code: str, compiled_code: bytes) -> bool:
-        raise NotImplementedError
-
-    def connect_to_space(self, space: str) -> Connection:
-        raise NotImplementedError
-
+from . import filters
+from . import query_builder
 
 class ResultSet:
     def fetchone(self) -> dict:
@@ -30,6 +18,49 @@ class ResultSet:
 
     def __getitem__(self, item):
         raise NotImplementedError
+
+
+class Connection:
+    def execute(self, statement: str, *args):
+        raise NotImplementedError
+
+
+class ContractStorageDriver:
+    def create_contract_space(self, space: str, source_code: str, compiled_code: bytes) -> bool:
+        raise NotImplementedError
+
+    def connect_to_contract_space(self, space: str) -> Connection:
+        raise NotImplementedError
+
+
+class SQLDriver:
+    def __init__(self):
+        self.storage = SQLContractStorageDriver()
+
+    def insert(self, contract, name, obj: dict) -> ResultSet:
+        conn = self.storage.connect_to_contract_space(contract)
+        q = query_builder.build_insert_into(name, obj)
+        return conn.execute(q)
+
+    def select(self, contract, name, columns: set, filters: filters.Filter) -> ResultSet:
+        conn = self.storage.connect_to_contract_space(contract)
+        q = query_builder.build_select(name=name, columns=columns, filters=filters)
+        return conn.execute(q)
+
+    def update(self, contract, name, sets: dict, filters: filters.Filter) -> ResultSet:
+        conn = self.storage.connect_to_contract_space(contract)
+        q = query_builder.build_update(name=name, sets=sets, filters=filters)
+        return conn.execute(q)
+
+    def delete(self, contract, name, filters: filters.Filter) -> ResultSet:
+        conn = self.storage.connect_to_contract_space(contract)
+        q = query_builder.build_delete(name=self.name, filters=filters)
+        return conn.execute(q)
+
+    def create_table(self, contract, name, values):
+        conn = self.storage.connect_to_contract_space(contract)
+        q = query_builder.build_create_table_query(name=name, values=values)
+        return conn.execute(q)
 
 
 class SQLResultSet(ResultSet):
@@ -97,11 +128,11 @@ class SQLConnection(Connection):
         return SQLResultSet(cursor=res)
 
 
-class SQLSpaceStorageDriver(SpaceStorageDriver):
+class SQLContractStorageDriver(ContractStorageDriver):
     def __init__(self, root=os.path.expanduser('~/contracts/')):
         self.root = root
 
-    def create_space(self, space: str, source_code: str, compiled_code: bytes):
+    def create_contract_space(self, space: str, source_code: str, compiled_code: bytes):
         if space.isalpha():
             db = sqlite3.connect(self.get_path_for_space(space))
             db.execute('create table if not exists contract (source text, compiled blob)')
@@ -110,7 +141,7 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
             return True
         return False
 
-    def connect_to_space(self, space: str):
+    def connect_to_contract_space(self, space: str):
         if space.isalpha():
             db = sqlite3.connect(self.get_path_for_space(space))
             return SQLConnection(connection=db)
@@ -120,12 +151,12 @@ class SQLSpaceStorageDriver(SpaceStorageDriver):
             os.remove(self.get_path_for_space(space))
 
     def source_code_for_space(self, space: str):
-        conn = self.connect_to_space(space=space)
+        conn = self.connect_to_contract_space(space=space)
         res = conn.execute('select source from contract')
         return res.fetchone()[0]
 
     def compiled_code_for_space(self, space: str):
-        conn = self.connect_to_space(space=space)
+        conn = self.connect_to_contract_space(space=space)
         res = conn.execute('select compiled from contract')
         return res.fetchone()[0]
 

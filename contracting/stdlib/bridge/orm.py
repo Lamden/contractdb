@@ -42,7 +42,6 @@ class S(SQLContract):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-
 # Define the locals that will be available for smart contracts at runtime
 exports = {
     'Variable': V,
@@ -50,5 +49,5 @@ exports = {
     'ForeignVariable': FV,
     'ForeignHash': FH,
     '__Contract': C,
-    '__SQLContract': S
+    '__SQLContract': S,
 }

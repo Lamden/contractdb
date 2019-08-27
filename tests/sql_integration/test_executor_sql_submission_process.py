@@ -3,9 +3,12 @@ from contracting.db.driver import ContractDriver
 from contracting.execution.executor import Executor, Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.utils import make_tx
-from contracting.db.state import SQLSpaceStorageDriver
+from contracting.db.state import SQLContractStorageDriver
 import nacl.signing
 import marshal
+
+from functools import partial
+
 
 def submission_kwargs_for_file(f):
     # Get the file name only by splitting off directories
@@ -34,7 +37,7 @@ TEST_SUBMISSION_KWARGS = {
 
 class TestExecutor(TestCase):
     def setUp(self):
-        self.s = SQLSpaceStorageDriver()
+        self.s = SQLContractStorageDriver()
 
         try:
             self.s.delete_space(space='submissionsql')
@@ -47,17 +50,16 @@ class TestExecutor(TestCase):
         with open('../../contracting/contracts/submissionsql.s.py') as f:
             contract = f.read()
 
-        self.s.create_space(space='submissionsql',
-                            source_code=contract,
-                            compiled_code=marshal.dumps(contract))
+        self.s.create_contract_space(space='submissionsql',
+                                     source_code=contract,
+                                     compiled_code=marshal.dumps(contract))
 
-        print(self.s.source_code_for_space('submissionsql'))
+        self.submit = partial(make_tx, key=self.key, contract='submissionsql', func='submit_contract')
 
         self.compiler = ContractingCompiler()
 
     def tearDown(self):
         self.s.delete_space(space='submissionsql')
-        self.s.delete_space(space='stubucks')
 
     def test_submission(self):
         e = Engine()
@@ -73,7 +75,7 @@ def d():
             'code': code
         }
 
-        tx = make_tx(self.key, contract='submissionsql', func='submit_contract', arguments=kwargs)
+        tx = self.submit(arguments=kwargs)
 
         out = e.run(tx)
         print(out)
@@ -81,9 +83,10 @@ def d():
         new_code = self.compiler.parse_to_code(code)
 
         self.assertEqual(self.s.source_code_for_space('stubucks'), new_code)
+        self.s.delete_space(space='stubucks')
 
     def test_submission_then_function_call(self):
-        e = Executor(metering=False)
+        e = Engine()
 
         code = '''@export
 def d():
@@ -95,11 +98,13 @@ def d():
             'code': code
         }
 
-        e.execute(**TEST_SUBMISSION_KWARGS, kwargs=kwargs)
-        status_code, result, _ = e.execute(sender='stu', contract_name='stubuckz', function_name='d', kwargs={})
+        e.run(self.submit(arguments=kwargs))
+        result = e.run(make_tx(key=self.key, contract='stubuckz', func='d', arguments={}))
 
-        self.assertEqual(result, 1)
-        self.assertEqual(status_code, 0)
+        self.assertEqual(result['result'], 1)
+        self.assertEqual(result['status'], 0)
+
+        self.s.delete_space(space='stubuckz')
 
     def test_kwarg_helper(self):
         k = submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py')

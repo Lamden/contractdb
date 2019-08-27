@@ -5,7 +5,7 @@ from importlib.abc import Loader, MetaPathFinder, PathEntryFinder
 from importlib import invalidate_caches, __import__
 from importlib.machinery import ModuleSpec
 from ..db.driver import ContractDriver
-from ..db.state import SQLSpaceStorageDriver
+from ..db.state import SQLContractStorageDriver
 from ..stdlib import env
 from ..execution.runtime import rt
 from ..db.orm import Variable, Hash
@@ -84,7 +84,7 @@ class SQLDatabaseFinder:
     def find_spec(self, fullname, path=None, target=None):
         if MODULE_CACHE.get(self) is None:
             try:
-                if SQLSpaceStorageDriver().source_code_for_space(self) is None:
+                if SQLContractStorageDriver().source_code_for_space(self) is None:
                     return None
             except:
                 return None
@@ -150,7 +150,7 @@ class DatabaseLoader(Loader):
 
 class SQLDatabaseLoader(Loader):
     def __init__(self):
-        self.s = SQLSpaceStorageDriver()
+        self.s = SQLContractStorageDriver()
 
     def create_module(self, spec):
         return None
