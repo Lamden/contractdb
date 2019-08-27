@@ -135,16 +135,21 @@ def select(i):
         self.assertEqual(k['name'], 'test_basic_table')
         self.assertEqual(k['code'], code)
 
-    def test_orm_variable_sets_in_contract(self):
-        e = Executor(metering=False)
+    def test_table_insert(self):
+        e = Engine()
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py'))
+        r = e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
 
-        e.execute('stu', 'test_orm_variable_contract', 'set_v', kwargs={'i': 1000})
+        print(r)
 
-        i = self.d.get('test_orm_variable_contract.v')
-        self.assertEqual(i, 1000)
+        e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
+            'i': 1000,
+            'j': 'sup'
+        }))
+
+        conn = self.s.connect_to_contract_space('submissionsql')
+        print(conn.execute('select * from contract').fetchall())
+
 
     def test_orm_variable_gets_in_contract(self):
         e = Executor(metering=False)
