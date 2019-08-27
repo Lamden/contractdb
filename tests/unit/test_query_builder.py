@@ -1,33 +1,40 @@
 from unittest import TestCase
 from contracting.db import query_builder
 from contracting.db import filters
+from contracting.db import types
 
 
 class TestQueryBuilder(TestCase):
     def test_parens_single(self):
-        s = query_builder.build_parenthesis(1)
-        self.assertEqual(s, '(?)')
+        s = query_builder.build_parenthesis({'test': 123})
+        self.assertEqual(s, '(:test)')
 
     def test_parens_two(self):
-        s = query_builder.build_parenthesis(2)
-        self.assertEqual(s, '(?, ?)')
+        s = query_builder.build_parenthesis({'test': 123, 'testing': 123}, False)
+        self.assertEqual(s, '(test, testing)')
 
     def test_parens_ten(self):
-        s = query_builder.build_parenthesis(10)
-        self.assertEqual(s, '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        s = query_builder.build_parenthesis({
+            'a': 123, 'b': 123, 'c': 123, 'd': 123, 'e': 123, 'f': 123, 'g': 123, 'x': 123, 'y': 123, 'z': 123
+        })
+        self.assertEqual(s, '(:a, :b, :c, :d, :e, :f, :g, :x, :y, :z)')
 
     def test_build_insert_into(self):
-        s = query_builder.build_insert_into(name='balances', values=5)
-        self.assertEqual(s, 'INSERT INTO balances VALUES (?, ?, ?, ?, ?);')
+        s = query_builder.build_insert_into(name='balances', values={
+            'test':  123,
+            'things': 'abd',
+            'woohoo': False
+        })
+        self.assertEqual(s, 'INSERT INTO balances (test, things, woohoo) VALUES (:test, :things, :woohoo);')
 
     def test_build_table_create(self):
-        s = query_builder.build_create_table_query(name='balances', values={'name': 'INTEGER'})
+        s = query_builder.build_create_table_query(name='balances', values={'name': types.Int})
         self.assertEqual(s, 'CREATE TABLE IF NOT EXISTS balances (name INTEGER);')
 
     def test_build_table_create_multiple(self):
-        s = query_builder.build_create_table_query(name='test', values={'name': 'INTEGER',
-                                                                        'another': 'TEXT',
-                                                                        'one': 'BLOB'})
+        s = query_builder.build_create_table_query(name='test', values={'name': types.Int,
+                                                                        'another': types.Text,
+                                                                        'one': types.Blob})
         self.assertEqual(s, 'CREATE TABLE IF NOT EXISTS test (name INTEGER, another TEXT, one BLOB);')
 
     def test_build_where(self):

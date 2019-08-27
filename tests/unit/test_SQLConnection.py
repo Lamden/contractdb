@@ -1,5 +1,6 @@
 from unittest import TestCase
 from contracting.db import state
+from contracting.db import types
 import sqlite3
 import os
 
@@ -234,3 +235,21 @@ class TestSQLConnection(TestCase):
 
         self.assertFalse(os.path.exists(s.get_path_for_space(contract)))
 
+    def test_insert_sqldriver_returns_result_set(self):
+        s = state.SQLContractStorageDriver()
+
+        contract = 'stubucks'
+        code = 'print("hello")'
+        compiled = b'123'
+
+        s.create_contract_space(contract, code, compiled)
+
+        d = state.SQLDriver()
+        d.create_table('stubucks', 'testing', {
+            'hello': types.Text,
+            'there': types.Int
+        })
+
+        d.insert('stubucks', 'testing', )
+
+        s.delete_space('stubucks')

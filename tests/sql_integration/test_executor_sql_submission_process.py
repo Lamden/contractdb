@@ -39,12 +39,6 @@ class TestExecutor(TestCase):
     def setUp(self):
         self.s = SQLContractStorageDriver()
 
-        try:
-            self.s.delete_space(space='submissionsql')
-            self.s.delete_space(space='stubucks')
-        except FileNotFoundError:
-            pass
-
         self.key = nacl.signing.SigningKey.generate()
 
         with open('../../contracting/contracts/submissionsql.s.py') as f:
@@ -62,6 +56,11 @@ class TestExecutor(TestCase):
         self.s.delete_space(space='submissionsql')
 
     def test_submission(self):
+        try:
+            self.s.delete_space(space='stubucks')
+        except:
+            pass
+
         e = Engine()
 
         code = '''@export
@@ -86,6 +85,11 @@ def d():
         self.s.delete_space(space='stubucks')
 
     def test_submission_then_function_call(self):
+        try:
+            self.s.delete_space(space='stubuckz')
+        except:
+            pass
+
         e = Engine()
 
         code = '''@export
@@ -109,7 +113,7 @@ def d():
     def test_kwarg_helper(self):
         k = submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py')
 
-        code = '''v = Variable()
+        code = '''t = Variable()
 
 @export
 def set_v(i):

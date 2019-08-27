@@ -1,18 +1,26 @@
 from . import filters
 
 
-def build_parenthesis(i):
+def build_parenthesis(i, colon=True):
     s = '('
-    for i in range(i - 1):
-        s += '?, '
-    s += '?)'
+
+    for e in i.keys():
+        if colon:
+            s += ':'
+
+        s += '{}, '.format(e)
+
+    s = s[:-2]
+
+    s += ')'
 
     return s
 
 
 def build_insert_into(name, values):
     parenthesis = build_parenthesis(values)
-    s = 'INSERT INTO {} VALUES {};'.format(name, parenthesis)
+    vals = build_parenthesis(values, False)
+    s = 'INSERT INTO {} {} VALUES {};'.format(name, vals, parenthesis)
     return s
 
 
@@ -21,7 +29,7 @@ def build_create_table_query(name, values):
 
     q += '('
     for k, v in values.items():
-        q += '{} {}, '.format(k, v)
+        q += '{} {}, '.format(k, v.repr())
     q = q[:-2]
 
     q += ');'
