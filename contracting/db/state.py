@@ -180,12 +180,12 @@ class SQLContractStorageDriver(ContractStorageDriver):
     def source_code_for_space(self, space: str):
         conn = self.connect_to_contract_space(space=space)
         res = conn.execute('select source from contract')
-        return res.fetchone()[0]
+        return res.fetchone()['source']
 
     def compiled_code_for_space(self, space: str):
         conn = self.connect_to_contract_space(space=space)
         res = conn.execute('select compiled from contract')
-        return res.fetchone()[0]
+        return res.fetchone()['compiled']
 
     def get_path_for_space(self, space):
         return os.path.join(self.root, '{}.db'.format(space))

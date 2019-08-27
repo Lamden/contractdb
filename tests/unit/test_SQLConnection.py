@@ -196,8 +196,8 @@ class TestSQLConnection(TestCase):
 
         res = c.fetchone()
 
-        self.assertEqual(res[0], code)
-        self.assertEqual(res[1], compiled)
+        self.assertEqual(res['source'], code)
+        self.assertEqual(res['compiled'], compiled)
 
     def test_return_source_code_from_state_returns_code_str(self):
         s = state.SQLContractStorageDriver()
