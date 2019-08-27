@@ -198,7 +198,7 @@ class Engine:
             return False
         return True
 
-    def run(self, tx: dict):
+    def run(self, tx: dict, environment={}):
         tx_output = {
             'status': 0,
             'updates': {},
@@ -224,6 +224,7 @@ class Engine:
 
         # Set the runtime driver (we might be able to remove this)
         runtime.rt.env.update({'__Driver': self.driver})
+        runtime.rt.env.update(environment)
         runtime.rt.ctx.append(tx['sender'])
 
         try:
