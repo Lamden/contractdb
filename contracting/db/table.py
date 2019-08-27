@@ -13,12 +13,12 @@ class Table:
     def insert(self, obj: dict) -> state.ResultSet:
         return self._driver.insert(self.contract, self.name, obj)
 
-    def select(self, columns: set, filters: filters.Filter) -> state.ResultSet:
+    def select(self, columns: set={}, filters=[]) -> state.ResultSet:
         return self._driver.select(self.contract, self.name, columns, filters)
 
-    def update(self, sets: dict, filters: filters.Filter) -> state.ResultSet:
+    def update(self, sets: dict, filters=[]) -> state.ResultSet:
         return self._driver.update(self.contract, self.name, sets, filters)
 
-    def delete(self, filters: filters.Filter) -> state.ResultSet:
+    def delete(self, filters=[]) -> state.ResultSet:
         return self._driver.delete(self.contract, self.name, filters)
 

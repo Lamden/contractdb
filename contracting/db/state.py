@@ -38,13 +38,13 @@ class Driver:
     def insert(self, contract, name, obj: dict) -> ResultSet:
         raise NotImplementedError
 
-    def select(self, contract, name, columns: set, filters: filters.Filter) -> ResultSet:
+    def select(self, contract, name, columns: set={}, filters=[]) -> ResultSet:
         raise NotImplementedError
 
-    def update(self, contract, name, sets: dict, filters: filters.Filter) -> ResultSet:
+    def update(self, contract, name, sets: dict, filters=[]) -> ResultSet:
         raise NotImplementedError
 
-    def delete(self, contract, name, filters: filters.Filter) -> ResultSet:
+    def delete(self, contract, name, filters=[]) -> ResultSet:
         raise NotImplementedError
 
     def create_table(self, contract, name, values):

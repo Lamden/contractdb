@@ -1,97 +1,23 @@
-from functools import partial
-from decimal import Decimal
+Bool = 'BOOL'
+Int = 'INTEGER'
+Text = 'TEXT'
+Blob = 'BLOB'
+Fixed2 = 'DECIMAL(128,2)'
+Fixed4 = 'DECIMAL(128,4)'
+Fixed6 = 'DECIMAL(128,6)'
+Fixed8 = 'DECIMAL(128,8)'
+Fixed10 = 'DECIMAL(128,10)'
+Fixed12 = 'DECIMAL(128,12)'
 
 
-class Type:
+class TypeConverter:
     @staticmethod
-    def to_raw(obj):
-        raise NotImplementedError
+    def convert(o):
+        if type(o) == int:
+            return '{}'.format(o)
 
-    @staticmethod
-    def from_raw(data):
-        raise NotImplementedError
+        elif type(o) == bool:
+            return '1' if o else '0'
 
-    @staticmethod
-    def repr():
-        raise NotImplementedError
-
-
-class Bool(Type):
-    @staticmethod
-    def to_raw(obj):
-        return bool(obj)
-
-    @staticmethod
-    def from_raw(data):
-        return data
-
-    @staticmethod
-    def repr():
-        return 'BOOL'
-
-
-class Int(Type):
-    @staticmethod
-    def to_raw(obj):
-        return int(obj)
-
-    @staticmethod
-    def from_raw(data):
-        return data
-
-    @staticmethod
-    def repr():
-        return 'INTEGER'
-
-
-class Text(Type):
-    @staticmethod
-    def to_raw(obj):
-        return str(obj)
-
-    @staticmethod
-    def from_raw(data):
-        return data
-
-    @staticmethod
-    def repr():
-        return 'TEXT'
-
-
-class Blob(Type):
-    @staticmethod
-    def to_raw(obj):
-        return bytes(obj)
-
-    @staticmethod
-    def from_raw(data):
-        return data
-
-    @staticmethod
-    def repr():
-        return 'BLOB'
-
-
-class FixedClassFactory:
-    def __call__(self, p):
-        return type('Fixed{}'.format(p),
-                   (Type,),
-                   {'to_raw': partial(self.to_raw, precision=p),
-                    'from_raw': partial(self.from_raw, precision=p),
-                    'repr': partial(self.repr, precision=p)
-                    })
-
-    @staticmethod
-    def to_raw(obj, precision):
-        return '{}'.format(round(obj, precision))
-
-    @staticmethod
-    def from_raw(data):
-        return Decimal(data)
-
-    @staticmethod
-    def repr(precision):
-        return 'DECIMAL(128,{})'.format(precision)
-
-
-Fixed = FixedClassFactory()
+        elif type(o) == str:
+            return '"{}"'.format(o)

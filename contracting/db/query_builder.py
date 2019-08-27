@@ -29,7 +29,7 @@ def build_create_table_query(name, values):
 
     q += '('
     for k, v in values.items():
-        q += '{} {}, '.format(k, v.repr())
+        q += '{} {}, '.format(k, v)
     q = q[:-2]
 
     q += ');'
