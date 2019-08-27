@@ -58,7 +58,8 @@ class SQLDriver:
     def insert(self, contract, name, obj: dict) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)
         q = query_builder.build_insert_into(name, obj)
-        return conn.execute(q)
+        print(obj)
+        return conn.execute(q, obj)
 
     def select(self, contract, name, columns: set, filters: filters.Filter) -> ResultSet:
         conn = self.storage.connect_to_contract_space(contract)

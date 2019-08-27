@@ -9,7 +9,7 @@ class TestSQLConnection(TestCase):
     def setUp(self):
         self.db = sqlite3.connect('testing.db')
 
-        self.db.execute('drop table testing')
+        self.db.execute('drop table if exists testing')
         self.db.execute('create table if not exists testing (one text, two integer)')
         self.db.commit()
 
@@ -162,7 +162,7 @@ class TestSQLConnection(TestCase):
 
         s.create_contract_space(contract, code, compiled)
 
-        db = sqlite3.connect('./stubucks.db')
+        db = sqlite3.connect(s.get_path_for_space('stubucks'))
 
         c = db.execute('select * from contract')
 
@@ -250,6 +250,11 @@ class TestSQLConnection(TestCase):
             'there': types.Int
         })
 
-        d.insert('stubucks', 'testing', )
+        res = d.insert('stubucks', 'testing', {
+            'hello': 'hi',
+            'there': 123
+        })
+
+        self.assertTrue(isinstance(res, state.ResultSet))
 
         s.delete_space('stubucks')
