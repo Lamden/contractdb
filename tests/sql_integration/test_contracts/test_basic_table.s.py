@@ -12,6 +12,16 @@ def insert(i, j):
 
 @export
 def select(i):
-    t.select(filters=[Filters.eq('hello', i)])
+    res = t.select(filters=[Filters.eq('hello', i)])
 
-    return t.fetchone()
+    return res.fetchone()
+
+@export
+def delete(i):
+    t.delete(filters=[Filters.eq('hello', i)])
+
+@export
+def update(i, j):
+    t.update(sets={
+        'there': j
+    }, filters=[Filters.eq('hello', i)])

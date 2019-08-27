@@ -1,5 +1,5 @@
 from . import filters
-
+from . import types
 
 def build_parenthesis(i, colon=True):
     s = '('
@@ -75,7 +75,7 @@ def build_update(name, sets={}, filters=[]):
     q = 'UPDATE {} SET '.format(name)
 
     for k, v in sets.items():
-        q += '{} = {} AND '.format(k, v)
+        q += '{} = {} AND '.format(k, types.TypeConverter.convert(v))
     q = q[:-5]
 
     q += ' {}'.format(build_where(filters))

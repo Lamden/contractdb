@@ -138,64 +138,110 @@ def select(i):
         self.assertEqual(k['code'], code)
 
     def test_table_insert(self):
+        try:
+            self.s.delete_space(space='test_basic_table')
+        except:
+            pass
+
         e = Engine(driver=SQLDriver())
 
-        r = e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
+        e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
 
-        r = e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
+        e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
             'i': 1000,
             'j': 'sup'
         }))
 
-        print(r)
-        conn = self.s.connect_to_contract_space('submissionsql')
+        conn = self.s.connect_to_contract_space('test_basic_table')
+        res = conn.execute('select * from t')
+        r = res.fetchone()
 
+        self.assertEqual(r, {'hello': 1000, 'there': 'sup'})
 
-    def test_orm_variable_gets_in_contract(self):
-        e = Executor(metering=False)
+    def test_table_select(self):
+        e = Engine(driver=SQLDriver())
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py'))
+        e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
 
-        res = e.execute('stu', 'test_orm_variable_contract', 'get_v', kwargs={})
+        res = e.run(make_tx(self.key, 'test_basic_table', 'select', arguments={
+            'i': 1000,
+        }))
 
-        self.assertEqual(res[1], None)
+        self.assertEqual(res['result'], None)
 
-    def test_orm_variable_gets_and_sets_in_contract(self):
-        e = Executor(metering=False)
+    def test_table_insert_select(self):
+        try:
+            self.s.delete_space(space='test_basic_table')
+        except:
+            pass
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py'))
+        e = Engine(driver=SQLDriver())
 
-        e.execute('stu', 'test_orm_variable_contract', 'set_v', kwargs={'i': 1000})
-        res = e.execute('stu', 'test_orm_variable_contract', 'get_v', kwargs={})
+        e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
 
-        self.assertEqual(res[1], 1000)
+        e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
+            'i': 1000,
+            'j': 'sup'
+        }))
 
-    def test_orm_hash_sets_in_contract(self):
-        e = Executor(metering=False)
+        res = e.run(make_tx(self.key, 'test_basic_table', 'select', arguments={
+            'i': 1000,
+        }))
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_hash_contract.s.py'))
+        self.assertEqual(res['result'], {'hello': 1000, 'there': 'sup'})
 
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'key1', 'v': 1234})
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'another_key', 'v': 9999})
+    def test_table_delete(self):
+        try:
+            self.s.delete_space(space='test_basic_table')
+        except:
+            pass
 
-        key1 = self.d.get('test_orm_hash_contract.h:key1')
-        another_key = self.d.get('test_orm_hash_contract.h:another_key')
+        e = Engine(driver=SQLDriver())
 
-        self.assertEqual(key1, 1234)
-        self.assertEqual(another_key, 9999)
+        e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
 
-    def test_orm_hash_gets_in_contract(self):
-        e = Executor(metering=False)
+        e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
+            'i': 1000,
+            'j': 'sup'
+        }))
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_hash_contract.s.py'))
+        e.run(make_tx(self.key, 'test_basic_table', 'delete', arguments={
+            'i': 1000,
+        }))
 
-        res = e.execute('stu', 'test_orm_hash_contract', 'get_h', kwargs={'k': 'test'})
+        res = e.run(make_tx(self.key, 'test_basic_table', 'select', arguments={
+            'i': 1000,
+        }))
 
-        self.assertEqual(res[1], None)
+        self.assertEqual(res['result'], None)
+
+    def test_table_update(self):
+        try:
+            self.s.delete_space(space='test_basic_table')
+        except:
+            pass
+
+        e = Engine(driver=SQLDriver())
+
+        e.run(self.submit(arguments=submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')))
+
+        e.run(make_tx(self.key, 'test_basic_table', 'insert', arguments={
+            'i': 1000,
+            'j': 'sup'
+        }))
+
+        res = e.run(make_tx(self.key, 'test_basic_table', 'update', arguments={
+            'i': 1000,
+            'j': 'zoomzoom'
+        }))
+
+        print(res)
+
+        res = e.run(make_tx(self.key, 'test_basic_table', 'select', arguments={
+            'i': 1000,
+        }))
+
+        self.assertEqual(res['result'], {'hello': 1000, 'there': 'zoomzoom'})
 
     def test_orm_hash_gets_and_sets_in_contract(self):
         e = Executor(metering=False)

@@ -22,3 +22,12 @@ class Table:
     def delete(self, filters=[]) -> state.ResultSet:
         return self._driver.delete(self.contract, self.name, filters)
 
+
+class ForeignTable:
+    def __init__(self, contract, name, driver: state.Driver):
+        self.contract = contract
+        self.name = name
+        self._driver = driver
+
+    def select(self, columns: set = {}, filters=[]) -> state.ResultSet:
+        return self._driver.select(self.contract, self.name, columns, filters)
