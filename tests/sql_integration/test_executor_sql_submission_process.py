@@ -111,20 +111,28 @@ def d():
         self.s.delete_space(space='stubuckz')
 
     def test_kwarg_helper(self):
-        k = submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py')
+        k = submission_kwargs_for_file('./test_contracts/test_basic_table.s.py')
 
-        code = '''t = Variable()
+        code = '''t = Table({
+    'hello': types.Int,
+    'there': types.Text
+})
 
 @export
-def set_v(i):
-    v.set(i)
+def insert(i, j):
+    t.insert({
+        'hello': i,
+        'there': j
+    })
 
 @export
-def get_v():
-    return v.get()
+def select(i):
+    t.select(filters=[Filters.eq('hello', i)])
+
+    return t.fetchone()
 '''
 
-        self.assertEqual(k['name'], 'test_orm_variable_contract')
+        self.assertEqual(k['name'], 'test_basic_table')
         self.assertEqual(k['code'], code)
 
     def test_orm_variable_sets_in_contract(self):
