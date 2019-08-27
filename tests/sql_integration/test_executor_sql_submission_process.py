@@ -289,15 +289,15 @@ def select(i):
         self.assertEqual(res['result'], this_is_a_passed_in_variable)
 
     def test_arbitrary_environment_passing_fails_if_not_passed_correctly(self):
-        e = Executor(metering=False)
+        e = Engine(driver=SQLDriver())
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/i_use_env.s.py'))
+        e.run(make_tx(self.key, 'submissionsql', 'submit_contract',
+                      arguments=submission_kwargs_for_file('./test_contracts/i_use_env.s.py')))
 
         this_is_a_passed_in_variable = 555
 
         env = {'this_is_another_passed_in_variable': this_is_a_passed_in_variable}
 
-        status, res, _ = e.execute('stu', 'i_use_env', 'env_var', kwargs={}, environment=env)
+        res = e.run(make_tx(self.key, 'i_use_env', 'env_var'), environment=env)
 
-        self.assertEqual(status, 1)
+        self.assertEqual(res['status'], 3)
