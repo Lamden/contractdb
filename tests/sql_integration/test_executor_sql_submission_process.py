@@ -243,124 +243,36 @@ def select(i):
 
         self.assertEqual(res['result'], {'hello': 1000, 'there': 'zoomzoom'})
 
-    def test_orm_hash_gets_and_sets_in_contract(self):
-        e = Executor(metering=False)
-
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_hash_contract.s.py'))
-
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'key1', 'v': 1234})
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'another_key', 'v': 9999})
-
-        _, key1, _ = e.execute('stu', 'test_orm_hash_contract', 'get_h', kwargs={'k': 'key1'})
-        _, another_key, _ = e.execute('stu', 'test_orm_hash_contract', 'get_h', kwargs={'k': 'another_key'})
-
-        self.assertEqual(key1, 1234)
-        self.assertEqual(another_key, 9999)
-
-    def test_orm_foreign_variable_sets_in_contract_doesnt_work(self):
-        e = Executor(metering=False)
-
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py'))
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_foreign_key_contract.s.py'))
-
-        e.execute('stu', 'test_orm_variable_contract', 'set_v', kwargs={'i': 1000})
-
-        # this should fail
-        status, _, _ = e.execute('stu', 'test_orm_foreign_key_contract', 'set_fv', kwargs={'i': 999})
-
-        self.assertEqual(status, 1)
-
-        _, i, _ = e.execute('stu', 'test_orm_variable_contract', 'get_v', kwargs={})
-        self.assertEqual(i, 1000)
-
-    def test_orm_foreign_variable_gets_in_contract(self):
-        e = Executor(metering=False)
-
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_variable_contract.s.py'))
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_foreign_key_contract.s.py'))
-
-        e.execute('stu', 'test_orm_variable_contract', 'set_v', kwargs={'i': 424242})
-
-        # this should fail
-        _, i, _ = e.execute('stu', 'test_orm_foreign_key_contract', 'get_fv', kwargs={})
-
-        self.assertEqual(i, 424242)
-
-    def test_orm_foreign_hash_sets_in_contract_doesnt_work(self):
-        e = Executor(metering=False)
-
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_hash_contract.s.py'))
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_foreign_hash_contract.s.py'))
-
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'key1', 'v': 1234})
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'another_key', 'v': 9999})
-
-        status_1, _, _ = e.execute('stu', 'test_orm_foreign_hash_contract', 'set_fh', kwargs={'k': 'key1', 'v': 5555})
-        status_2, _, _ = e.execute('stu', 'test_orm_foreign_hash_contract', 'set_fh', kwargs={'k': 'another_key', 'v': 1000})
-
-        key1 = self.d.get('test_orm_hash_contract.h:key1')
-        another_key = self.d.get('test_orm_hash_contract.h:another_key')
-
-        self.assertEqual(key1, 1234)
-        self.assertEqual(another_key, 9999)
-        self.assertEqual(status_1, 1)
-        self.assertEqual(status_2, 1)
-
-    def test_orm_foreign_hash_gets_and_sets_in_contract(self):
-        e = Executor(metering=False)
-
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_hash_contract.s.py'))
-
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                  kwargs=submission_kwargs_for_file('./test_contracts/test_orm_foreign_hash_contract.s.py'))
-
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'key1', 'v': 1234})
-        e.execute('stu', 'test_orm_hash_contract', 'set_h', kwargs={'k': 'another_key', 'v': 9999})
-
-        _, key1, _ = e.execute('stu', 'test_orm_foreign_hash_contract', 'get_fh', kwargs={'k': 'key1'})
-        _, another_key, _ = e.execute('stu', 'test_orm_foreign_hash_contract', 'get_fh', kwargs={'k': 'another_key'})
-
-        self.assertEqual(key1, 1234)
-        self.assertEqual(another_key, 9999)
-
     def test_orm_contract_not_accessible(self):
-        e = Executor(metering=False)
+        e = Engine(driver=SQLDriver())
 
-        res = e.execute(**TEST_SUBMISSION_KWARGS,
-            kwargs=submission_kwargs_for_file('./test_contracts/test_orm_no_contract_access.s.py'))
+        res = e.run(make_tx(self.key, 'submissionsql', 'submit_contract',
+            arguments=submission_kwargs_for_file('./test_contracts/test_orm_no_contract_access.s.py')))
 
-        self.assertIsInstance(res[1], Exception)
+        self.assertEqual(res['status'], 3)
 
     def test_construct_function_sets_properly(self):
-        e = Executor(metering=False)
+        e = Engine(driver=SQLDriver())
 
-        r = e.execute(**TEST_SUBMISSION_KWARGS,
-            kwargs=submission_kwargs_for_file('./test_contracts/test_construct_function_works.s.py'))
+        e.run(make_tx(self.key, 'submissionsql', 'submit_contract',
+                      arguments=submission_kwargs_for_file('./test_contracts/test_construct_function_works.s.py')))
 
-        res = e.execute('stu', 'test_construct_function_works', 'get', kwargs={})
+        res = e.run(make_tx(self.key, 'test_construct_function_works', 'get'))
 
-        self.assertEqual(res[1], 42)
+        self.assertEqual(res['result'], {'key': 'test', 'value': '42'})
 
     def test_import_exported_function_works(self):
-        e = Executor(metering=False)
+        e = Engine(driver=SQLDriver())
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                        kwargs=submission_kwargs_for_file('./test_contracts/import_this.s.py'))
+        e.run(make_tx(self.key, 'submissionsql', 'submit_contract',
+                      arguments=submission_kwargs_for_file('./test_contracts/import_this.s.py')))
 
-        e.execute(**TEST_SUBMISSION_KWARGS,
-                        kwargs=submission_kwargs_for_file('./test_contracts/importing_that.s.py'))
+        e.run(make_tx(self.key, 'submissionsql', 'submit_contract',
+                      arguments=submission_kwargs_for_file('./test_contracts/importing_that.s.py')))
 
-        res = e.execute('stu', 'importing_that', 'test', kwargs={})
+        res = e.run(make_tx(self.key, 'importing_that', 'test'))
 
-        self.assertEqual(res[1], 12345 - 1000)
+        self.assertEqual(res['result'], 12345 - 1000)
 
     def test_arbitrary_environment_passing_works_via_executor(self):
         e = Executor(metering=False)

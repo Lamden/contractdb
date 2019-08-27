@@ -3,7 +3,7 @@ from .db.encoder import encode
 import hashlib
 
 
-def make_tx(key: nacl.signing.SigningKey, contract, func, arguments):
+def make_tx(key: nacl.signing.SigningKey, contract, func, arguments={}):
     tx = {
         'sender': key.verify_key.encode().hex(),
         'signature': None,
