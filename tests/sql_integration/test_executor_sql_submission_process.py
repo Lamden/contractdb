@@ -148,7 +148,6 @@ def select(i):
         }))
 
         conn = self.s.connect_to_contract_space('submissionsql')
-        print(conn.execute('select * from contract').fetchall())
 
 
     def test_orm_variable_gets_in_contract(self):

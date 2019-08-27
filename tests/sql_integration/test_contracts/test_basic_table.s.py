@@ -1,4 +1,4 @@
-t = Table({
+t = Table(schema={
     'hello': types.Int,
     'there': types.Text
 })

@@ -84,7 +84,7 @@ class Linter(ast.NodeVisitor):
     def visit_Assign(self, node):
         # resource_names, func_name = Assert.valid_assign(node, Parser.parser_scope)
         if isinstance(node.value, ast.Call) and not isinstance(node.value.func, ast.Attribute) and node.value.func.id in config.ORM_CLASS_NAMES:
-            if node.value.func.id in ['Variable', 'Hash']:
+            if node.value.func.id in ['Variable', 'Hash', 'Table']:
                 kwargs = [k.arg for k in node.value.keywords]
                 if 'contract' in kwargs or 'name' in kwargs:
                     self._is_success = False
