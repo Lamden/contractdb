@@ -2,6 +2,9 @@ from unittest import TestCase
 from contracting.server import interfaces as rpc
 from contracting.client import ContractingClient
 from contracting.execution.executor import Executor
+from contracting.execution.executor import Engine
+from contracting.compilation.compiler import ContractingCompiler
+from contracting.db.driver import ContractDriver
 from contracting.utils import make_tx
 import nacl.signing
 import json
@@ -36,7 +39,7 @@ TEST_SUBMISSION_KWARGS = {
 
 class TestRPC(TestCase):
     def setUp(self):
-        self.rpc = rpc.KVSStateInterface()
+        self.rpc = rpc.StateInterface(driver=ContractDriver(), engine=Engine(), compiler=ContractingCompiler())
 
         self.rpc.driver.flush()
 
@@ -252,17 +255,11 @@ def get_owner():
 
         result = self.rpc.run_all([tx, tx_2])
 
-        from pprint import pprint
-
-        pprint(result)
-
         self.assertEqual(result[0]['input'], tx)
         self.assertEqual(result[1]['input'], tx_2)
 
         owner = result[0]['output']['updates'].get('stu_bucks.owner')
         accessed_owner = result[1]['output']['result']
-
-        print(owner)
 
         self.assertEqual(owner, json.dumps(pk))
         self.assertEqual(accessed_owner, pk)
