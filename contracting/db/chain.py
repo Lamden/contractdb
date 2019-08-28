@@ -1,8 +1,10 @@
+from contracting.db.encoder import encode
+from contracting.utils import hash_bytes
+
 import sqlite3
 import json
 import os
-from contracting.db.encoder import encode
-from contracting.utils import hash_bytes
+
 
 class BlockStorageDriver:
     def get_block_by_hash(self, h: str):
