@@ -1,1 +1,1 @@
-from .kvs import StateInterface, KVSStateInterface
+from .interfaces import StateInterface, KVSStateInterface
