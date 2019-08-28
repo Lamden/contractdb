@@ -1,6 +1,6 @@
 import sqlite3
 import json
-
+from ..utils import hash_dict
 
 class BlockStorageDriver:
     def get_block_by_hash(self, h: str):
@@ -22,6 +22,26 @@ class BlockStorageDriver:
     @property
     def latest_hash(self):
         raise NotImplementedError
+
+
+class BlockController:
+    def generate_block_hash(self, b: dict) -> str:
+        raise NotImplementedError
+
+    def generate_block_from_transactions(self, t: list) -> dict:
+        raise NotImplementedError
+
+    def process_transactions(self, t: list):
+        raise NotImplementedError
+
+
+class SQLBlockController:
+    def generate_block_hash(self, b: dict):
+        return hash_dict(b)
+
+    def generate_block_from_transactions(self, t):
+        for _t in t:
+            pass
 
 
 class SQLLiteBlockStorageDriver(BlockStorageDriver):

@@ -36,12 +36,14 @@ TEST_SUBMISSION_KWARGS = {
 
 class TestRPC(TestCase):
     def setUp(self):
-        rpc.driver.flush()
+        self.rpc = rpc.KVSStateInterface()
+
+        self.rpc.driver.flush()
 
         with open('../../contracting/contracts/submission.s.py') as f:
             contract = f.read()
 
-        rpc.driver.set_contract(name='submission',
+        self.rpc.driver.set_contract(name='submission',
                                 code=contract,
                                 author='sys')
 
@@ -51,7 +53,7 @@ class TestRPC(TestCase):
                        kwargs=submission_kwargs_for_file('./test_sys_contracts/currency.s.py'))
 
     def tearDown(self):
-        rpc.driver.flush()
+        self.rpc.driver.flush()
 
     def test_get_contract(self):
         contract = '''
@@ -63,14 +65,14 @@ def stu():
         author = 'woohoo'
         _t = 'test'
 
-        rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        self.rpc.driver.set_contract(name, contract, author=author, _type=_t)
 
-        response = rpc.get_contract('stustu')
+        response = self.rpc.get_contract('stustu')
 
         self.assertEqual(response, contract)
 
     def test_get_contract_doesnt_exist_returns_status(self):
-        response = rpc.get_contract('stustu')
+        response = self.rpc.get_contract('stustu')
 
         expected = {'status': 1}
 
@@ -86,16 +88,16 @@ def stu():
         author = 'woohoo'
         _t = 'test'
 
-        rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        self.rpc.driver.set_contract(name, contract, author=author, _type=_t)
 
-        response = rpc.get_methods('stustu')
+        response = self.rpc.get_methods('stustu')
 
         expected = [{'name': 'stu', 'arguments': []}]
 
         self.assertEqual(response, expected)
 
     def test_get_methods_doesnt_return_private_methods(self):
-        response = rpc.get_methods('currency')
+        response = self.rpc.get_methods('currency')
 
         expected = [{'name': 'transfer', 'arguments': ['to', 'amount']},
                     {'name': 'approve', 'arguments': ['spender', 'amount']},
@@ -104,35 +106,35 @@ def stu():
         self.assertEqual(response, expected)
 
     def test_get_methods_no_contract_returns_error(self):
-        response = rpc.get_methods('stustu')
+        response = self.rpc.get_methods('stustu')
 
         expected = {'status': 1}
 
         self.assertEqual(response, expected)
 
     def test_get_var_that_exists(self):
-        response = rpc.get_var('currency', 'seed_amount')
+        response = self.rpc.get_var('currency', 'seed_amount')
 
         expected = 1000000
 
         self.assertEqual(response, expected)
 
     def test_get_var_that_doesnt_exist(self):
-        response = rpc.get_var('currency', 'bleck')
+        response = self.rpc.get_var('currency', 'bleck')
 
         expected = {'status': 2}
 
         self.assertEqual(response, expected)
 
     def test_get_var_hash_that_exists(self):
-        response = rpc.get_var('currency', 'balances', '324ee2e3544a8853a3c5a0ef0946b929aa488cbe7e7ee31a0fef9585ce398502')
+        response = self.rpc.get_var('currency', 'balances', '324ee2e3544a8853a3c5a0ef0946b929aa488cbe7e7ee31a0fef9585ce398502')
 
         expected = 1000000
 
         self.assertEqual(response, expected)
 
     def test_get_var_hash_that_doesnt_exist(self):
-        response = rpc.get_var('currency', 'balances',
+        response = self.rpc.get_var('currency', 'balances',
                                'xxx')
 
         expected = {'status': 2}
@@ -140,7 +142,7 @@ def stu():
         self.assertEqual(response, expected)
 
     def test_get_var_contract_doesnt_exist(self):
-        response = rpc.get_var('xxx', 'balances',
+        response = self.rpc.get_var('xxx', 'balances',
                                'xxx')
 
         expected = {'status': 1}
@@ -156,24 +158,24 @@ def stu():
     def test_get_vars_returns_correctly(self):
         expected = ['xrate', 'seed_amount', 'balances', 'allowed']
 
-        response = rpc.get_vars('currency')
+        response = self.rpc.get_vars('currency')
 
         self.assertEqual(response, expected)
 
     def test_get_vars_on_contract_doesnt_exist(self):
-        response = rpc.get_vars('xxx')
+        response = self.rpc.get_vars('xxx')
 
         expected = {'status': 1}
 
         self.assertEqual(response, expected)
 
     def test_run_tx(self):
-        rpc.driver.flush()
+        self.rpc.driver.flush()
 
         with open('../../contracting/contracts/submission.s.py') as f:
             contract = f.read()
 
-        rpc.driver.set_contract(name='submission',
+        self.rpc.driver.set_contract(name='submission',
                             code=contract,
                             author='sys')
 
@@ -201,7 +203,7 @@ def get_owner():
                         'name': 'stu_bucks'
                     })
 
-        result = rpc.run(tx)
+        result = self.rpc.run(tx)
 
         self.assertEqual(result['input'], tx)
 
@@ -210,12 +212,12 @@ def get_owner():
         self.assertEqual(owner, json.dumps(pk))
 
     def test_run_all_tx(self):
-        rpc.driver.flush()
+        self.rpc.driver.flush()
 
         with open('../../contracting/contracts/submission.s.py') as f:
             contract = f.read()
 
-        rpc.driver.set_contract(name='submission',
+        self.rpc.driver.set_contract(name='submission',
                                 code=contract,
                                 author='sys')
 
@@ -248,7 +250,7 @@ def get_owner():
                        func='get_owner',
                        arguments={})
 
-        result = rpc.run_all([tx, tx_2])
+        result = self.rpc.run_all([tx, tx_2])
 
         self.assertEqual(result[0]['input'], tx)
         self.assertEqual(result[1]['input'], tx_2)
@@ -267,7 +269,7 @@ def a():
         '''
         err = "Line 4 : S2- Illicit use of '_' before variable : __ruh_roh__"
 
-        res = rpc.lint(code)
+        res = self.rpc.lint(code)
 
         self.assertEqual(res[0], err)
 
@@ -289,7 +291,7 @@ def __private(message):
     print(message)
 '''
 
-        compiled_result = rpc.compile_code(code)
+        compiled_result = self.rpc.compile_code(code)
 
         self.assertEqual(compiled_result, compiled_code)
 
@@ -303,16 +305,16 @@ def stu():
         author = 'woohoo'
         _t = 'test'
 
-        rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        self.rpc.driver.set_contract(name, contract, author=author, _type=_t)
 
         command = {'command': 'get_contract',
                    'arguments': {
                        'name': 'stustu'
                    }}
 
-        got_contract = rpc.get_contract('stustu')
+        got_contract = self.rpc.get_contract('stustu')
 
-        rpc_result = rpc.process_json_rpc_command(command)
+        rpc_result = self.rpc.process_json_rpc_command(command)
 
         self.assertEqual(got_contract, rpc_result)
 
@@ -322,14 +324,14 @@ def stu():
                        'name': 'stustu'
                    }}
 
-        rpc_result = rpc.process_json_rpc_command(command)
+        rpc_result = self.rpc.process_json_rpc_command(command)
 
         self.assertIsNone(rpc_result)
 
     def test_process_no_args(self):
         command = {'command': 'get_contract'}
 
-        rpc_result = rpc.process_json_rpc_command(command)
+        rpc_result = self.rpc.process_json_rpc_command(command)
 
         self.assertIsNone(rpc_result)
 
@@ -339,6 +341,6 @@ def stu():
                        'name': 'stustu'
                    }}
 
-        rpc_result = rpc.process_json_rpc_command(command)
+        rpc_result = self.rpc.process_json_rpc_command(command)
 
         self.assertIsNone(rpc_result)

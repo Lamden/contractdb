@@ -1,5 +1,4 @@
 from unittest import TestCase
-from contracting.stdlib.bridge.time import Datetime
 from contracting.client import ContractingClient
 
 

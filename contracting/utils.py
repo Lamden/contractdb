@@ -23,6 +23,11 @@ def make_tx(key: nacl.signing.SigningKey, contract, func, arguments={}):
     return tx
 
 
+def hash_dict(d: dict) -> str:
+    sorted_dict = {k: v for k, v in sorted(d.items())}
+    return encode(sorted_dict).encode()
+
+
 # Standard method for hashing any data b into a hex string
 def hash_bytes(b: bytes):
     h = hashlib.sha3_256()
@@ -32,8 +37,8 @@ def hash_bytes(b: bytes):
 
 # Standard method for generating a transaction hash
 def generate_tx_hash(tx_input: dict, tx_output: dict):
-    encoded_input = encode(tx_input).encode()
-    encoded_output = encode(tx_output).encode()
+    encoded_input = hash_dict(tx_input)
+    encoded_output = hash_dict(tx_output)
 
     return hash_bytes(encoded_input + encoded_output)
 

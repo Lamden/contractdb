@@ -172,15 +172,6 @@ class TestSQLConnection(TestCase):
         self.assertEqual(res[0], code)
         self.assertEqual(res[1], compiled)
 
-    def test_no_non_alpha_contracts_allowed(self):
-        s = state.SQLContractStorageDriver()
-
-        contract = 'stubucks123'
-        code = 'print("hello")'
-        compiled = b'123'
-
-        self.assertFalse(s.create_contract_space(contract, code, compiled))
-
     def test_connect_to_space_returns_sql_connection_object(self):
         s = state.SQLContractStorageDriver()
 
