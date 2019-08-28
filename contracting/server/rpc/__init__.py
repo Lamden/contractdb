@@ -1,1 +1,1 @@
-from .rpc import KVSStateInterface
+from .kvs import StateInterface, KVSStateInterface

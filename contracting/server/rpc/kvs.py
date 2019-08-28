@@ -2,7 +2,6 @@ from contracting.db.driver import ContractDriver
 from contracting.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting import utils
-
 import ast
 
 NO_CONTRACT = 1
@@ -10,6 +9,21 @@ NO_VARIABLE = 2
 
 
 class StateInterface:
+    def __init__(self, driver, compiler, engine):
+        self.driver = driver
+        self.compiler = compiler
+        self.engine = engine
+
+        self.command_map = {
+            'get_contract': self.get_contract,
+            'get_var': self.get_var,
+            'get_vars': self.get_vars,
+            'run': self.run,
+            'run_all': self.run_all,
+            'lint': self.lint,
+            'compile': self.compile_code
+        }
+
     def get_contract(self, name: str):
         raise NotImplementedError
 
@@ -38,21 +52,9 @@ class StateInterface:
         raise NotImplementedError
 
 
-class KVSStateInterface:
+class KVSStateInterface(StateInterface):
     def __init__(self, driver=ContractDriver(), compiler=ContractingCompiler(), engine=Engine()):
-        self.driver = driver
-        self.compiler = compiler
-        self.engine = engine
-
-        self.command_map = {
-            'get_contract': self.get_contract,
-            'get_var': self.get_var,
-            'get_vars': self.get_vars,
-            'run': self.run,
-            'run_all': self.run_all,
-            'lint': self.lint,
-            'compile': self.compile_code
-        }
+        super().__init__(driver, compiler, engine)
 
     def get_contract(self, name: str):
         code = self.driver.get_contract(name)
@@ -183,3 +185,20 @@ class KVSStateInterface:
             return
 
         return func(**arguments)
+
+
+class SQLStateInterface(StateInterface):
+    def __init__(self, driver=ContractDriver(), compiler=ContractingCompiler(), engine=Engine()):
+        self.driver = driver
+        self.compiler = compiler
+        self.engine = engine
+
+        self.command_map = {
+            'get_contract': self.get_contract,
+            'get_var': self.get_var,
+            'get_vars': self.get_vars,
+            'run': self.run,
+            'run_all': self.run_all,
+            'lint': self.lint,
+            'compile': self.compile_code
+        }
