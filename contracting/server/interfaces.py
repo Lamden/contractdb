@@ -1,8 +1,9 @@
 from contracting.execution.executor import Engine
 from contracting import utils
-import ast
 import struct
 from contracting.db.chain import BlockStorageDriver
+
+from contracting.compilation.helpers import CodeHelper
 
 NO_CONTRACT = 1
 NO_VARIABLE = 2
@@ -13,6 +14,8 @@ class StateInterface:
         self.driver = driver
         self.compiler = compiler
         self.engine = engine
+
+        self.helper = CodeHelper(compiler=self.compiler)
 
         # Set the engine driver
         self.engine.driver = self.driver
@@ -59,20 +62,7 @@ class StateInterface:
                 'status': NO_CONTRACT
             }
 
-        tree = ast.parse(contract_code)
-
-        function_defs = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
-
-        funcs = []
-        for definition in function_defs:
-            func_name = definition.name
-            kwargs = [arg.arg for arg in definition.args.args]
-
-            if not func_name.startswith('__'):
-                funcs.append({
-                    'name': func_name,
-                    'arguments': kwargs
-                })
+        funcs = self.helper.get_methods_for_compiled_code(contract_code)
 
         return funcs
 
@@ -84,8 +74,6 @@ class StateInterface:
                 'status': NO_CONTRACT
             }
 
-        # Multihashes don't work here
-        # Make contract self.driver deal with this so we can abstract it later
         response = self.driver.get_key(contract, variable, key)
 
         if response is None:
@@ -103,28 +91,7 @@ class StateInterface:
                 'status': NO_CONTRACT
             }
 
-        v = []
-
-        tree = ast.parse(contract_code)
-
-        for node in ast.walk(tree):
-            if type(node) != ast.Assign:
-                continue
-
-            try:
-                if type(node.value) is not ast.Call:
-                    continue
-
-                if node.value.func.id not in {'Variable', 'Hash'}:
-                    continue
-
-                var_name = node.targets[0].id
-                v.append(var_name.lstrip('__'))
-
-            except AttributeError:
-                pass
-
-        return v
+        return self.helper.get_variable_names_for_initialized_classes(contract_code, classes={'Variable', 'Hash'})
 
     def run(self, transaction: dict):
         output = self.engine.run(transaction)
@@ -183,15 +150,7 @@ class StateInterface:
             return results
 
     def lint(self, code: str):
-        tree = ast.parse(code)
-        violations = self.compiler.linter.check(tree)
-
-        return_list = []
-
-        for violation in violations:
-            return_list.append(violation)
-
-        return return_list
+        return self.helper.get_violations_for_code(code)
 
     def compile_code(self, code: str):
         return self.compiler.parse_to_code(code)

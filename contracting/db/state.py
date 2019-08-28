@@ -1,7 +1,9 @@
 import sqlite3
 import os
+import shutil
 from . import query_builder
 from .filters import Filters
+import marshal
 
 class ResultSet:
     def fetchone(self) -> dict:
@@ -26,6 +28,10 @@ class Connection:
 
 
 class ContractStorageDriver:
+    def __init__(self, root: str):
+        self.root = root
+        os.mkdir(self.root)
+
     def create_contract_space(self, space: str, source_code: str, compiled_code: bytes) -> bool:
         raise NotImplementedError
 
@@ -111,6 +117,16 @@ class SQLDriver:
 
         return response
 
+    def flush(self):
+        if os.path.isdir(self.storage.root):
+            shutil.rmtree(self.storage.root)
+        os.mkdir(self.storage.root)
+
+    def set_contract(self, name, code, *args, **kwargs):
+        code_obj = compile(code, '', 'exec')
+        code_blob = marshal.dumps(code_obj)
+
+        self.storage.create_contract_space(name, source_code=code, compiled_code=code_blob)
 
 class SQLResultSet(ResultSet):
     def __init__(self, cursor: sqlite3.Cursor):

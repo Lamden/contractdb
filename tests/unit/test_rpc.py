@@ -5,6 +5,7 @@ from contracting.execution.executor import Executor
 from contracting.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.db.driver import ContractDriver
+from contracting.db.state import SQLDriver
 from contracting.utils import make_tx
 import nacl.signing
 import json
