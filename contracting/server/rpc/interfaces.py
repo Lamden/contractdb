@@ -1,20 +1,26 @@
 from contracting.db.driver import ContractDriver
-from contracting.db.state import SQLDriver, SQLContractStorageDriver
+from contracting.db.state import SQLDriver
 from contracting.db.filters import Filters
 from contracting.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting import utils
 import ast
+import struct
+from contracting.db.chain import BlockStorageDriver
 
 NO_CONTRACT = 1
 NO_VARIABLE = 2
 
 
 class StateInterface:
-    def __init__(self, driver, compiler, engine):
+    def __init__(self, driver, compiler, engine, blocks: BlockStorageDriver=None):
         self.driver = driver
         self.compiler = compiler
         self.engine = engine
+
+        # Optional interface into block storage
+        self.blocks = blocks
+        self.blocks_enabled = False
 
         self.command_map = {
             'get_contract': self.get_contract,
@@ -25,6 +31,17 @@ class StateInterface:
             'lint': self.lint,
             'compile': self.compile_code
         }
+
+        if self.blocks is not None:
+            self.blocks_enabled = True
+
+            self.command_map.update({
+                'get_block_by_hash': self.blocks.get_block_by_hash,
+                'get_block_by_index': self.blocks.get_block_by_index,
+                'block_height': self.blocks.height,
+                'block_hash': self.blocks.latest_hash,
+                'store_txs': self.store_txs
+            })
 
     def get_contract(self, name: str):
         raise NotImplementedError
@@ -48,6 +65,9 @@ class StateInterface:
         raise NotImplementedError
 
     def compile_code(self, code: str):
+        raise NotImplementedError
+
+    def store_txs(self, txs: list):
         raise NotImplementedError
 
     def process_json_rpc_command(self, payload: dict):
@@ -153,12 +173,37 @@ class KVSStateInterface(StateInterface):
     def run_all(self, transactions: list):
         results = []
 
-        for transaction in transactions:
+        for i in range(len(transactions)):
+            transaction = transactions[i]
+
+            # Add index for ordering purposes
+            transaction['index'] = i
+
             output = self.engine.run(transaction)
+
             result = utils.make_finalized_tx(transaction, output)
+
+            # Create a TX Hash that is entirely unique. If not enabled, this will have to be done by another system
+            # that is storing the block data.
+            if self.blocks_enabled:
+                block_hash = bytes.fromhex(self.blocks.latest_hash)
+                index_as_bytes = struct.pack('>H', i)
+                encoded_tx_in = utils.hash_dict(transaction)
+                encoded_tx_out = utils.hash_dict(output)
+
+                new_tx_hash = utils.hash_bytes(block_hash + index_as_bytes +
+                                               encoded_tx_in + encoded_tx_out)
+
+                result['hash'] = new_tx_hash
+
             results.append(result)
 
-        return results
+        if self.blocks_enabled:
+            stored_block = self.blocks.store_txs(results)
+            return stored_block
+
+        else:
+            return results
 
     def lint(self, code: str):
         tree = ast.parse(code)
@@ -295,17 +340,59 @@ class SQLStateInterface(StateInterface):
 
     def run(self, transaction: dict):
         output = self.engine.run(transaction)
-        return utils.make_finalized_tx(transaction, output)
+        transaction['index'] = 0
+        result = utils.make_finalized_tx(transaction, output)
+
+        if self.blocks_enabled:
+            block_hash = bytes.fromhex(self.blocks.latest_hash)
+            index_as_bytes = struct.pack('>H', i)
+            encoded_tx_in = utils.hash_dict(transaction)
+            encoded_tx_out = utils.hash_dict(output)
+
+            new_tx_hash = utils.hash_bytes(block_hash + index_as_bytes +
+                                           encoded_tx_in + encoded_tx_out)
+
+            result['hash'] = new_tx_hash
+
+            stored_block = self.blocks.store_txs([result])
+            return stored_block
+        else:
+            return result
 
     def run_all(self, transactions: list):
         results = []
 
-        for transaction in transactions:
+        for i in range(len(transactions)):
+            transaction = transactions[i]
+
+            # Add index for ordering purposes
+            transaction['index'] = i
+
             output = self.engine.run(transaction)
+
             result = utils.make_finalized_tx(transaction, output)
+
+            # Create a TX Hash that is entirely unique. If not enabled, this will have to be done by another system
+            # that is storing the block data.
+            if self.blocks_enabled:
+                block_hash = bytes.fromhex(self.blocks.latest_hash)
+                index_as_bytes = struct.pack('>H', i)
+                encoded_tx_in = utils.hash_dict(transaction)
+                encoded_tx_out = utils.hash_dict(output)
+
+                new_tx_hash = utils.hash_bytes(block_hash + index_as_bytes +
+                                               encoded_tx_in + encoded_tx_out)
+
+                result['hash'] = new_tx_hash
+
             results.append(result)
 
-        return results
+        if self.blocks_enabled:
+            stored_block = self.blocks.store_txs(results)
+            return stored_block
+
+        else:
+            return results
 
     def lint(self, code: str):
         tree = ast.parse(code)

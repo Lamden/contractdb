@@ -1,6 +1,8 @@
 import sqlite3
 import json
-from ..utils import hash_dict
+import os
+from contracting.db.encoder import encode
+from contracting.utils import hash_bytes
 
 class BlockStorageDriver:
     def get_block_by_hash(self, h: str):
@@ -15,6 +17,9 @@ class BlockStorageDriver:
     def insert_block(self, b: dict):
         raise NotImplementedError
 
+    def store_txs(self, txs: list):
+        raise NotImplementedError
+
     @property
     def height(self):
         raise NotImplementedError
@@ -24,28 +29,8 @@ class BlockStorageDriver:
         raise NotImplementedError
 
 
-class BlockController:
-    def generate_block_hash(self, b: dict) -> str:
-        raise NotImplementedError
-
-    def generate_block_from_transactions(self, t: list) -> dict:
-        raise NotImplementedError
-
-    def process_transactions(self, t: list):
-        raise NotImplementedError
-
-
-class SQLBlockController:
-    def generate_block_hash(self, b: dict):
-        return hash_dict(b)
-
-    def generate_block_from_transactions(self, t):
-        for _t in t:
-            pass
-
-
 class SQLLiteBlockStorageDriver(BlockStorageDriver):
-    def __init__(self, filename='blocks.db'):
+    def __init__(self, filename=os.path.expanduser('~/contracts/blocks.db')):
         self.conn = sqlite3.connect(filename)
         self.cursor = self.conn.cursor()
         self.setup()
@@ -198,3 +183,18 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
                                  updates))
 
         self.conn.commit()
+
+    def store_txs(self, txs: list):
+        # Calculate the new hash, index, and return the results after storing
+        block_hash = hash_bytes(encode(txs).encode())
+        index = self.height() + 1
+
+        block_dict = {
+            'hash': block_hash,
+            'index': index,
+            'transactions': txs
+        }
+
+        self.insert_block(block_dict)
+
+        return block_dict

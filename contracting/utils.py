@@ -23,7 +23,7 @@ def make_tx(key: nacl.signing.SigningKey, contract, func, arguments={}):
     return tx
 
 
-def hash_dict(d: dict) -> str:
+def hash_dict(d: dict) -> bytes:
     sorted_dict = {k: v for k, v in sorted(d.items())}
     return encode(sorted_dict).encode()
 
