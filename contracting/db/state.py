@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from . import query_builder
-
+from .filters import Filters
 
 class ResultSet:
     def fetchone(self) -> dict:
@@ -87,6 +87,29 @@ class SQLDriver:
 
     def clear_sets(self):
         self.sets = []
+
+    def get_contract(self, contract_name: str):
+        return self.storage.source_code_for_space(contract_name)
+
+    def get_key(self, contract, variable, key):
+        # Find the primary key of the table to query against
+        conn = self.storage.connect_to_contract_space(contract)
+        cur = conn.execute('pragma table_info("{}")'.format(variable))
+
+        # The column tuple ends in 0 if not primary, 1 if it does. 2nd element of the array is the name of the column.
+        columns = cur.fetchall()
+        primary_key = None
+        for c in columns:
+            if c[-1] == 1:
+                primary_key = c[1]
+                break
+
+        response = None
+        if primary_key is not None:
+            cur = self.select(contract=contract, name=variable, filters=[Filters.eq(primary_key, key)])
+            response = cur.fetchone()
+
+        return response
 
 
 class SQLResultSet(ResultSet):

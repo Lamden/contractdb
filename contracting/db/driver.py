@@ -267,3 +267,11 @@ class ContractDriver(RedisConnectionDriver):
     def get_contract_keys(self, name):
         keys = [k.decode() for k in self.iter(prefix='{}{}'.format(name, self.delimiter))]
         return keys
+
+    def get_key(self, contract, variable, key):
+        if key is None:
+            response = self.get('{}.{}'.format(contract, variable))
+        else:
+            response = self.get('{}.{}:{}'.format(contract, variable, key))
+
+        return response

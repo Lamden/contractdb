@@ -1,6 +1,5 @@
 from contracting.db.driver import ContractDriver
 from contracting.db.state import SQLDriver
-from contracting.db.filters import Filters
 from contracting.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting import utils
@@ -13,7 +12,7 @@ NO_VARIABLE = 2
 
 
 class StateInterface:
-    def __init__(self, driver, compiler, engine, blocks: BlockStorageDriver=None):
+    def __init__(self, driver, compiler, engine: Engine, blocks: BlockStorageDriver=None):
         self.driver = driver
         self.compiler = compiler
         self.engine = engine
@@ -40,7 +39,6 @@ class StateInterface:
                 'get_block_by_index': self.blocks.get_block_by_index,
                 'block_height': self.blocks.height,
                 'block_hash': self.blocks.latest_hash,
-                'store_txs': self.store_txs
             })
 
     def get_contract(self, name: str):
@@ -65,9 +63,6 @@ class StateInterface:
         raise NotImplementedError
 
     def compile_code(self, code: str):
-        raise NotImplementedError
-
-    def store_txs(self, txs: list):
         raise NotImplementedError
 
     def process_json_rpc_command(self, payload: dict):
@@ -123,10 +118,7 @@ class KVSStateInterface(StateInterface):
 
         # Multihashes don't work here
         # Make contract self.driver deal with this so we can abstract it later
-        if key is None:
-            response = self.driver.get('{}.{}'.format(contract, variable))
-        else:
-            response = self.driver.get('{}.{}:{}'.format(contract, variable, key))
+        response = self.driver.get_key(contract, variable, key)
 
         if response is None:
             return {
@@ -179,7 +171,7 @@ class KVSStateInterface(StateInterface):
             # Add index for ordering purposes
             transaction['index'] = i
 
-            output = self.engine.run(transaction)
+            output = self.engine.run(transaction, part_of_batch=True)
 
             result = utils.make_finalized_tx(transaction, output)
 
@@ -241,7 +233,7 @@ class SQLStateInterface(StateInterface):
         super().__init__(driver, compiler, engine)
 
     def get_contract(self, name: str):
-        code = self.driver.storage.source_code_for_space(name)
+        code = self.driver.get_contract(name)
 
         if code is None:
             return {
@@ -251,7 +243,7 @@ class SQLStateInterface(StateInterface):
         return code
 
     def get_methods(self, contract: str):
-        contract_code = self.driver.storage.source_code_for_space(contract)
+        contract_code = self.driver.get_contract(contract)
 
         if contract_code is None:
             return {
@@ -283,22 +275,7 @@ class SQLStateInterface(StateInterface):
                 'status': NO_CONTRACT
             }
 
-        # Find the primary key of the table to query against
-        conn = self.driver.storage.connect_to_contract_space(contract)
-        cur = conn.execute('pragma table_info("{}")'.format(variable))
-
-        # The column tuple ends in 0 if not primary, 1 if it does. 2nd element of the array is the name of the column.
-        columns = cur.fetchall()
-        primary_key = None
-        for c in columns:
-            if c[-1] == 1:
-                primary_key = c[1]
-                break
-
-        response = None
-        if primary_key is not None:
-            cur = self.driver.select(contract=contract, name=variable, filters=[Filters.eq(primary_key, key)])
-            response = cur.fetchone()
+        response = self.driver.get_key(contract, variable, key)
 
         if response is None:
             return {
@@ -345,7 +322,7 @@ class SQLStateInterface(StateInterface):
 
         if self.blocks_enabled:
             block_hash = bytes.fromhex(self.blocks.latest_hash)
-            index_as_bytes = struct.pack('>H', i)
+            index_as_bytes = struct.pack('>H', 0)
             encoded_tx_in = utils.hash_dict(transaction)
             encoded_tx_out = utils.hash_dict(output)
 

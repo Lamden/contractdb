@@ -152,6 +152,7 @@ class Sandbox(object):
 # if that is set in the environment variables
 
 expected_tx_keys = {'sender', 'signature', 'payload'}
+expected_tx_batch_keys = {'sender', 'signature', 'payload', 'index'}
 expected_payload_keys = {'contract', 'function', 'arguments'}
 
 MALFORMED_TX = 1
@@ -168,8 +169,9 @@ class Engine:
         self.stamps_enabled = stamps_enabled
         self.timestamps_enabled = timestamps_enabled
 
-    def verify_tx_structure(self, tx: dict):
-        if tx.keys() ^ expected_tx_keys != set():
+    def verify_tx_structure(self, tx: dict, part_of_batch=False):
+        expected_keys = expected_tx_keys if not part_of_batch else expected_tx_batch_keys
+        if tx.keys() ^ expected_keys != set():
             return False
 
         if tx['payload'].keys() ^ expected_payload_keys != set():
@@ -198,7 +200,7 @@ class Engine:
             return False
         return True
 
-    def run(self, tx: dict, environment={}):
+    def run(self, tx: dict, environment={}, part_of_batch=False):
         tx_output = {
             'status': 0,
             'updates': {},
@@ -210,7 +212,7 @@ class Engine:
             tx_output['cost'] = 0
 
         # Verify the structure of the tx
-        if not self.verify_tx_structure(tx):
+        if not self.verify_tx_structure(tx, part_of_batch):
             tx_output['status'] = MALFORMED_TX
             return tx_output
 

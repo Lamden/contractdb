@@ -1,5 +1,5 @@
 from unittest import TestCase
-from contracting.server import rpc
+from contracting.server import interfaces as rpc
 from contracting.client import ContractingClient
 from contracting.execution.executor import Executor
 from contracting.utils import make_tx
@@ -252,11 +252,17 @@ def get_owner():
 
         result = self.rpc.run_all([tx, tx_2])
 
+        from pprint import pprint
+
+        pprint(result)
+
         self.assertEqual(result[0]['input'], tx)
         self.assertEqual(result[1]['input'], tx_2)
 
         owner = result[0]['output']['updates'].get('stu_bucks.owner')
         accessed_owner = result[1]['output']['result']
+
+        print(owner)
 
         self.assertEqual(owner, json.dumps(pk))
         self.assertEqual(accessed_owner, pk)
