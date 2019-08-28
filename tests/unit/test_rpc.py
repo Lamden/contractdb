@@ -5,7 +5,7 @@ from contracting.execution.executor import Executor
 from contracting.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.db.driver import ContractDriver
-from contracting.db.state import SQLDriver
+from contracting.db.chain import SQLLiteBlockStorageDriver
 from contracting.utils import make_tx
 import nacl.signing
 import json
@@ -348,3 +348,171 @@ def stu():
         rpc_result = self.rpc.process_json_rpc_command(command)
 
         self.assertIsNone(rpc_result)
+
+
+class TestRPCBlockDriver(TestCase):
+    def setUp(self):
+        self.rpc = rpc.StateInterface(driver=ContractDriver(), engine=Engine(),
+                                      compiler=ContractingCompiler(), blocks=SQLLiteBlockStorageDriver())
+
+        self.rpc.driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        self.rpc.driver.set_contract(name='submission',
+                                code=contract,
+                                author='sys')
+
+        self.e = Executor(currency_contract='erc20_clone', metering=False)
+
+        self.e.execute(**TEST_SUBMISSION_KWARGS,
+                       kwargs=submission_kwargs_for_file('./test_sys_contracts/currency.s.py'))
+
+    def tearDown(self):
+        self.rpc.driver.flush()
+        self.rpc.blocks.flush()
+
+    def test_init(self):
+        self.assertTrue(self.rpc.blocks_enabled)
+
+    def test_run_works_same_as_blocks_not_stored(self):
+        self.rpc.driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        self.rpc.driver.set_contract(name='submission',
+                                     code=contract,
+                                     author='sys')
+
+        contract = '''
+owner = Variable()
+
+@construct
+def seed():
+    owner.set(ctx.caller)
+
+@export
+def get_owner():
+    return owner.get()
+        '''
+
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = make_tx(nakey,
+                     contract='submission',
+                     func='submit_contract',
+                     arguments={
+                         'code': contract,
+                         'name': 'stu_bucks'
+                     })
+
+        result = self.rpc.run(tx)
+
+        self.assertEqual(result['transactions'][0]['input'], tx)
+
+        owner = result['transactions'][0]['output']['updates'].get('stu_bucks.owner')
+
+        self.assertEqual(owner, json.dumps(pk))
+
+    def test_run_blocks_stores_block(self):
+        self.rpc.driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        self.rpc.driver.set_contract(name='submission',
+                                     code=contract,
+                                     author='sys')
+
+        contract = '''
+owner = Variable()
+
+@construct
+def seed():
+    owner.set(ctx.caller)
+
+@export
+def get_owner():
+    return owner.get()
+        '''
+
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = make_tx(nakey,
+                     contract='submission',
+                     func='submit_contract',
+                     arguments={
+                         'code': contract,
+                         'name': 'stu_bucks'
+                     })
+
+        self.assertEqual(self.rpc.blocks.height(), 0)
+
+        result = self.rpc.run(tx)
+
+        self.assertEqual(result['transactions'][0]['input'], tx)
+
+        owner = result['transactions'][0]['output']['updates'].get('stu_bucks.owner')
+
+        self.assertEqual(owner, json.dumps(pk))
+
+        self.assertEqual(self.rpc.blocks.height(), 1)
+
+    def test_run_all_stores_block_and_equals_retrieved_block(self):
+        self.rpc.driver.flush()
+
+        with open('../../contracting/contracts/submission.s.py') as f:
+            contract = f.read()
+
+        self.rpc.driver.set_contract(name='submission',
+                                     code=contract,
+                                     author='sys')
+
+        contract = '''
+owner = Variable()
+
+@construct
+def seed():
+    owner.set(ctx.caller)
+
+@export
+def get_owner():
+    return owner.get()
+                '''
+
+        nakey = nacl.signing.SigningKey.generate()
+
+        pk = nakey.verify_key.encode().hex()
+
+        tx = make_tx(nakey,
+                     contract='submission',
+                     func='submit_contract',
+                     arguments={
+                         'code': contract,
+                         'name': 'stu_bucks'
+                     })
+
+        from copy import deepcopy
+
+        self.rpc.run(tx)
+
+        tx = make_tx(nakey,
+                     contract='stu_bucks',
+                     func='get_owner')
+
+        txs = [deepcopy(tx) for _ in range(10)]
+
+        block = self.rpc.run_all(txs)
+
+        got_block = self.rpc.blocks.get_block_by_index(self.rpc.blocks.height())
+
+        print(json.dumps(block))
+        print(json.dumps(got_block))
+
+        self.assertDictEqual(block, got_block)

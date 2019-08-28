@@ -45,17 +45,26 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
                             'signature text, contract text, function text, arguments text)')
 
         self.cursor.execute('create table if not exists transaction_outputs (hash text primary key,'
-                            'parent_block text, block_index integer, status integer, updates text)')
+                            'parent_block text, block_index integer, status integer, updates text, result text)')
 
     def height(self):
         self.cursor.execute('select idx from blocks order by idx desc')
         h = self.cursor.fetchone()
+        if h is None:
+            return 0
         return h[0]
 
     def latest_hash(self):
         self.cursor.execute('select hash from blocks order by idx desc')
         h = self.cursor.fetchone()
+        if h is None:
+            return '0' * 64
         return h[0]
+
+    def flush(self):
+        self.cursor.execute('drop table blocks')
+        self.cursor.execute('drop table transaction_inputs')
+        self.cursor.execute('drop table transaction_outputs')
 
     @staticmethod
     def _build_block(block, tx_inputs, tx_outputs):
@@ -71,14 +80,14 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             tx_hash, _, idx, sender, sig, contract, func, args = tx_inputs[i]
             args_unpacked = json.loads(args)
 
-            _, _, _, status, updates = tx_outputs[i]
+            _, _, _, status, updates, result = tx_outputs[i]
             updates_unpacked = json.loads(updates)
 
             # Build the dict
             tx = {
                 'hash': tx_hash,
-                'index': idx,
                 'input': {
+                    'index': idx,
                     'sender': sender,
                     'signature': sig,
                     'payload': {
@@ -89,7 +98,8 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
                 },
                 'output': {
                     'status': status,
-                    'updates': updates_unpacked
+                    'updates': updates_unpacked,
+                    'result': result
                 }
             }
 
@@ -97,7 +107,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             block_dict['transactions'].append(tx)
 
         # Sort transactions by index
-        sorted(block_dict['transactions'], key=lambda t: t['index'])
+        sorted(block_dict['transactions'], key=lambda t: t['input']['index'])
 
         return block_dict
 
@@ -136,14 +146,14 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         tx_hash, _, idx, sender, sig, contract, func, args = tx_input
         args_unpacked = json.loads(args)
 
-        _, _, _, status, updates = tx_output
+        _, _, _, status, updates, result = tx_output
         updates_unpacked = json.loads(updates)
 
         # Build the dict
         tx = {
             'hash': tx_hash,
-            'index': idx,
             'input': {
+                'index': idx,
                 'sender': sender,
                 'signature': sig,
                 'payload': {
@@ -154,7 +164,8 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             },
             'output': {
                 'status': status,
-                'updates': updates_unpacked
+                'updates': updates_unpacked,
+                'result': result
             }
         }
 
@@ -169,7 +180,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             self.cursor.execute('insert into transaction_inputs values (?, ?, ?, ?, ?, ?, ?, ?)',
                                 (transaction['hash'],
                                  b['hash'],
-                                 transaction['index'],
+                                 transaction['input']['index'],
                                  transaction['input']['sender'],
                                  transaction['input']['signature'],
                                  transaction['input']['payload']['contract'],
@@ -177,12 +188,13 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
                                  args))
 
             updates = json.dumps(transaction['output']['updates'])
-            self.cursor.execute('insert into transaction_outputs values (?, ?, ?, ?, ?)',
+            self.cursor.execute('insert into transaction_outputs values (?, ?, ?, ?, ?, ?)',
                                 (transaction['hash'],
                                  b['hash'],
-                                 transaction['index'],
+                                 transaction['input']['index'],
                                  transaction['output']['status'],
-                                 updates))
+                                 updates,
+                                 transaction['output']['result']))
 
         self.conn.commit()
 

@@ -99,7 +99,7 @@ class StateInterface:
         result = utils.make_finalized_tx(transaction, output)
 
         if self.blocks_enabled:
-            block_hash = bytes.fromhex(self.blocks.latest_hash)
+            block_hash = bytes.fromhex(self.blocks.latest_hash())
             index_as_bytes = struct.pack('>H', 0)
             encoded_tx_in = utils.hash_dict(transaction)
             encoded_tx_out = utils.hash_dict(output)
@@ -108,6 +108,8 @@ class StateInterface:
                                            encoded_tx_in + encoded_tx_out)
 
             result['hash'] = new_tx_hash
+
+            print(result)
 
             stored_block = self.blocks.store_txs([result])
             return stored_block
@@ -130,7 +132,7 @@ class StateInterface:
             # Create a TX Hash that is entirely unique. If not enabled, this will have to be done by another system
             # that is storing the block data.
             if self.blocks_enabled:
-                block_hash = bytes.fromhex(self.blocks.latest_hash)
+                block_hash = bytes.fromhex(self.blocks.latest_hash())
                 index_as_bytes = struct.pack('>H', i)
                 encoded_tx_in = utils.hash_dict(transaction)
                 encoded_tx_out = utils.hash_dict(output)
