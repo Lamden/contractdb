@@ -31,7 +31,8 @@ class StateInterface:
             'run': self.run,
             'run_all': self.run_all,
             'lint': self.lint,
-            'compile': self.compile_code
+            'compile': self.compile_code,
+            'ping': self.ok
         }
 
         if self.blocks is not None:
@@ -43,6 +44,9 @@ class StateInterface:
                 'block_height': self.blocks.height,
                 'block_hash': self.blocks.latest_hash,
             })
+
+    def ok(self):
+        return 'ok'
 
     def get_contract(self, name: str):
         code = self.driver.get_contract(name)

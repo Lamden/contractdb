@@ -2,7 +2,6 @@ from unittest import TestCase
 from contracting.server.server import Server
 import asyncio
 import zmq
-from contracting.server import interfaces as rpc
 import json
 
 

@@ -8,9 +8,8 @@ from ..db.state import SQLDriver
 from ..compilation.compiler import ContractingCompiler
 from ..db.encoder import encode, decode
 
-
 class Server:
-    def __init__(self, port: int, ctx: zmq.Context, linger=2000, poll_timeout=2000):
+    def __init__(self, port: int, ctx: zmq.Context=zmq.asyncio.Context(), linger=2000, poll_timeout=2000):
         self.port = port
 
         self.address = 'tcp://*:{}'.format(port)
