@@ -1,7 +1,11 @@
 import asyncio
 import zmq
 import zmq.asyncio
-from .rpc import process_json_rpc_command
+from .interfaces import StateInterface
+from ..db.chain import SQLLiteBlockStorageDriver
+from ..execution.executor import Engine
+from ..db.state import SQLDriver
+from ..compilation.compiler import ContractingCompiler
 from ..db.encoder import encode, decode
 
 
@@ -19,6 +23,11 @@ class Server:
         self.poll_timeout = poll_timeout
 
         self.running = False
+
+        self.interface = StateInterface(driver=SQLDriver(),
+                                        compiler=ContractingCompiler(),
+                                        engine=Engine(),
+                                        blocks=SQLLiteBlockStorageDriver())
 
     async def serve(self):
         self.setup_socket()
@@ -43,7 +52,7 @@ class Server:
         # Try to deserialize the message and run it through the rpc service
         try:
             json_command = decode(msg.decode())
-            result = process_json_rpc_command(json_command)
+            result = self.interface.process_json_rpc_command(json_command)
 
         # If this fails, just set the result to None
         except:

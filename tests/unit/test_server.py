@@ -2,7 +2,7 @@ from unittest import TestCase
 from contracting.server.server import Server
 import asyncio
 import zmq
-from contracting.server import rpc
+from contracting.server import interfaces as rpc
 import json
 
 
@@ -79,7 +79,7 @@ def stu():
         author = 'woohoo'
         _t = 'test'
 
-        rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        m.interface.driver.set_contract(name, contract, author=author, _type=_t)
 
         command = {'command': 'get_contract',
                    'arguments': {
@@ -95,7 +95,7 @@ def stu():
         loop = asyncio.get_event_loop()
         res = loop.run_until_complete(tasks)[1]
 
-        expected = rpc.get_contract('stustu')
+        expected = m.interface.get_contract('stustu')
 
         self.assertEqual(res, expected)
 

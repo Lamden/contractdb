@@ -488,8 +488,6 @@ def get_owner():
 
         nakey = nacl.signing.SigningKey.generate()
 
-        pk = nakey.verify_key.encode().hex()
-
         tx = make_tx(nakey,
                      contract='submission',
                      func='submit_contract',
@@ -511,8 +509,5 @@ def get_owner():
         block = self.rpc.run_all(txs)
 
         got_block = self.rpc.blocks.get_block_by_index(self.rpc.blocks.height())
-
-        print(json.dumps(block))
-        print(json.dumps(got_block))
 
         self.assertDictEqual(block, got_block)
