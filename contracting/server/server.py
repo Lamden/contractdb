@@ -8,6 +8,7 @@ from ..db.state import SQLDriver
 from ..compilation.compiler import ContractingCompiler
 from ..db.encoder import encode, decode
 
+
 class Server:
     def __init__(self, port: int, ctx: zmq.Context=zmq.asyncio.Context(), linger=2000, poll_timeout=2000):
         self.port = port
@@ -40,6 +41,7 @@ class Server:
                     _id = await self.socket.recv()
                     msg = await self.socket.recv()
                     asyncio.ensure_future(self.handle_msg(_id, msg))
+                    await asyncio.sleep(0)
 
             except zmq.error.ZMQError:
                 self.socket.close()
@@ -51,10 +53,13 @@ class Server:
         # Try to deserialize the message and run it through the rpc service
         try:
             json_command = decode(msg.decode())
+            print('Got: {}'.format(json_command))
             result = self.interface.process_json_rpc_command(json_command)
+            print('Returning: {}'.format(result))
 
         # If this fails, just set the result to None
-        except:
+        except Exception as e:
+            print(str(e))
             result = None
 
         # Try to send the message now. This persists if the socket fails.

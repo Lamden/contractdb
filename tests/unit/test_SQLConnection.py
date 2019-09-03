@@ -14,6 +14,9 @@ class TestSQLConnection(TestCase):
         self.db.execute('create table if not exists testing (one text, two integer)')
         self.db.commit()
 
+    def tearDown(self):
+        self.db.close()
+
     def test_connection_similar_to_regular_connection(self):
         conn = state.SQLConnection(connection=self.db)
 

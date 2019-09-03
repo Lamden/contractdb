@@ -4,7 +4,7 @@ from contracting.db.chain import SQLLiteBlockStorageDriver
 
 class TestSQLLiteBlockStorageDriver(TestCase):
     def setUp(self):
-        self.chain = SQLLiteBlockStorageDriver()
+        self.chain = SQLLiteBlockStorageDriver(filename='blocks.db')
 
         self.chain.cursor.execute('drop table blocks')
         self.chain.cursor.execute('drop table transaction_inputs')
@@ -121,6 +121,10 @@ class TestSQLLiteBlockStorageDriver(TestCase):
 
         self.chain.insert_block(self.b)
         self.chain.insert_block(self.b2)
+        self.chain.conn.commit()
+
+    def tearDown(self):
+        self.chain.conn.close()
 
     def test_get_block_by_hash(self):
         b = self.chain.get_block_by_hash('hello')

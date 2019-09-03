@@ -45,8 +45,8 @@ class StateInterface:
                 'block_hash': self.blocks.latest_hash,
             })
 
-    def ok(self):
-        return 'ok'
+    def ok(self, *args):
+        return {'result': 'ok'}
 
     def get_contract(self, name: str):
         code = self.driver.get_contract(name)
@@ -165,14 +165,17 @@ class StateInterface:
         command = payload.get('command')
         arguments = payload.get('arguments')
 
-        if command is None or arguments is None:
+        if command is None:
             return
+
+        if arguments is None:
+            payload['arguments'] = {}
 
         func = self.command_map.get(command)
 
         if func is None:
             return
 
-        return func(**arguments)
+        result = func(**arguments)
 
-
+        return result
