@@ -1,18 +1,9 @@
 import re
 
-
-class InvalidOptionPassed(Exception):
-    pass
+from .base import TypeDefinition, InvalidOptionPassed
 
 
-class Type:
-    @staticmethod
-    def validate_options(optional=None):
-        if optional not in [None, True, False]:
-            raise InvalidOptionPassed
-
-
-class String(Type):
+class String(TypeDefinition):
     @staticmethod
     def validate_options(optional=None, regex=None, length=None):
         super().validate_options(optional)
@@ -27,7 +18,7 @@ class String(Type):
             raise InvalidOptionPassed
 
 
-class Int(Type):
+class Int(TypeDefinition):
     @staticmethod
     def validate_options(optional=None, signed=False, bits=None):
         super().validate_options(optional)
@@ -48,13 +39,13 @@ class Number(Int):
             raise InvalidOptionPassed
 
 
-class Bool(Type):
+class Bool(TypeDefinition):
     @staticmethod
     def validate_options(optional=None):
         super().validate_options(optional)
 
 
-class Hex(Type):
+class Hex(TypeDefinition):
     @staticmethod
     def validate_options(optional=None, bytes=None):
         super().validate_options(optional)
@@ -63,7 +54,7 @@ class Hex(Type):
             raise InvalidOptionPassed
 
 
-class Binary(Type):
+class Binary(TypeDefinition):
     @staticmethod
     def validate_options(optional=None, bytes=None):
         super().validate_options()
@@ -72,28 +63,42 @@ class Binary(Type):
             raise InvalidOptionPassed
 
 
-class Date(Type):
+class Date(TypeDefinition):
     @staticmethod
     def validate_options(optional=None):
         super().validate_options(optional)
 
 
-class Time(Type):
+class Time(TypeDefinition):
     @staticmethod
     def validate_options(optional=None):
         super().validate_options(optional)
 
 
-class DateTime(Type):
+class DateTime(TypeDefinition):
     @staticmethod
     def validate_options(optional=None):
         super().validate_options(optional)
 
 
-class Enum(Type):
+class Enum(TypeDefinition):
     @staticmethod
     def validate_options(optional=None, values=None):
         super().validate_options(optional)
 
         if len(values) != len(set(values)):
             raise InvalidOptionPassed
+
+
+MAPPING = {
+    'string': String,
+    'int': Int,
+    'number': Number,
+    'bool': Bool,
+    'hex': Hex,
+    'binary': Binary,
+    'date': Date,
+    'time': Time,
+    'datetime': DateTime,
+    'enum': Enum
+}

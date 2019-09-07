@@ -1,11 +1,11 @@
 import yaml
+from .type_definitions import primitives
 
 
 class InvalidTypeDefault(Exception):
     pass
 
 
-PRIMITIVE_TOKENS = {'string', 'int', 'number', 'bool', 'hex', 'binary', 'date', 'time', 'datetime', 'enum'}
 MUTABLE_TOKENS = {'set', 'list', 'tuple'}
 REFERENCE_TOKENS = {'local', 'global'}
 
@@ -30,14 +30,31 @@ def is_valid(schema: str):
 
 
 def validate_type_default(s: str):
-    if s not in PRIMITIVE_TOKENS | MUTABLE_TOKENS | REFERENCE_TOKENS:
+    if s not in primitives.MAPPING.keys() | MUTABLE_TOKENS | REFERENCE_TOKENS:
         raise InvalidTypeDefault
 
 
 def validate_type_definition(d: dict):
-    return True
+    k = list(d.keys())[0]
+
+    if k in primitives.MAPPING.keys():
+        validate_primitive_type(d)
+
+    elif k in MUTABLE_TOKENS:
+        pass
+
+    elif k in REFERENCE_TOKENS:
+        pass
+
+    else:
+        raise InvalidTypeDefault
+
+
+def validate_primitive_type(d: dict):
+    pass
 
 
 def validate_object(d: dict):
-    return True
-
+    for k, v in d.items():
+        if k in PRIMITIVE_MAPPING.keys() | MUTABLE_TOKENS | REFERENCE_TOKENS:
+            raise InvalidTypeDefault
