@@ -3,7 +3,6 @@ class InvalidOptionPassed(Exception):
 
 
 class TypeDefinition:
-    @staticmethod
-    def validate_options(optional=None):
+    def validate_options(self, optional=None):
         if optional not in [None, True, False]:
             raise InvalidOptionPassed

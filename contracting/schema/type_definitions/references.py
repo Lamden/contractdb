@@ -1,8 +1,10 @@
+from .base import TypeDefinition, InvalidOptionPassed
 
 
-class Local:
-    pass
-
+class Local(TypeDefinition):
+    @staticmethod
+    def validate_options(optional=None):
+        pass
 
 class Global:
     pass

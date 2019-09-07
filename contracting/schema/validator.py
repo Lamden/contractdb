@@ -6,19 +6,26 @@ class InvalidTypeDefault(Exception):
     pass
 
 
+class InvalidSchema(Exception):
+    pass
+
+
 MUTABLE_TOKENS = {'set', 'list', 'tuple'}
 REFERENCE_TOKENS = {'local', 'global'}
 
 
 def is_valid(schema: str):
-    d = yaml.load(schema)
+    d = yaml.load(schema, Loader=yaml.Loader)
 
     schema = d.get('schema')
 
     if schema is None:
-        return False
+        raise InvalidSchema
 
     for k, v in schema.items():
+        if k in primitives.MAPPING.keys() | MUTABLE_TOKENS | REFERENCE_TOKENS:
+            raise InvalidTypeDefault
+
         if type(v) == str:
             validate_type_default(v)
 
@@ -30,15 +37,16 @@ def is_valid(schema: str):
 
 
 def validate_type_default(s: str):
-    if s not in primitives.MAPPING.keys() | MUTABLE_TOKENS | REFERENCE_TOKENS:
+    if s not in primitives.MAPPING.keys():
         raise InvalidTypeDefault
 
 
 def validate_type_definition(d: dict):
-    k = list(d.keys())[0]
+    k, v = list(d.items())[0]
 
     if k in primitives.MAPPING.keys():
-        validate_primitive_type(d)
+        validator = primitives.MAPPING[k]
+        validator.validate_options(**v)
 
     elif k in MUTABLE_TOKENS:
         pass
@@ -50,11 +58,7 @@ def validate_type_definition(d: dict):
         raise InvalidTypeDefault
 
 
-def validate_primitive_type(d: dict):
-    pass
-
-
 def validate_object(d: dict):
     for k, v in d.items():
-        if k in PRIMITIVE_MAPPING.keys() | MUTABLE_TOKENS | REFERENCE_TOKENS:
+        if k in primitives.MAPPING.keys() | MUTABLE_TOKENS | REFERENCE_TOKENS:
             raise InvalidTypeDefault
