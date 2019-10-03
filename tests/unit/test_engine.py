@@ -151,8 +151,12 @@ class TestEngine(TestCase):
         with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
+        print(contract)
+
         driver.set_contract(name='submission',
                             code=contract)
+
+        driver.commit()
 
         contract = '''
 owner = Variable()

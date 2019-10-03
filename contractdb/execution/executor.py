@@ -3,7 +3,6 @@ import decimal
 from contracting.execution import runtime
 from contractdb.db.driver import ContractDBDriver
 from contracting.execution.module import install_database_loader
-from contracting import config
 from contracting.db.encoder import encode
 
 import json

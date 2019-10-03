@@ -113,8 +113,6 @@ class StateInterface:
 
             result['hash'] = new_tx_hash
 
-            print(result)
-
             stored_block = self.blocks.store_txs([result])
             return stored_block
         else:
@@ -169,7 +167,7 @@ class StateInterface:
             return
 
         if arguments is None:
-            payload['arguments'] = {}
+            arguments = {}
 
         func = self.command_map.get(command)
 

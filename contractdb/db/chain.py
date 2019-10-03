@@ -180,7 +180,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             self.cursor.execute('insert into transaction_inputs values (?, ?, ?, ?, ?, ?, ?, ?)',
                                 (transaction['hash'],
                                  b['hash'],
-                                 transaction['index'],
+                                 transaction['input']['index'],
                                  transaction['input']['sender'],
                                  transaction['input']['signature'],
                                  transaction['input']['payload']['contract'],
@@ -191,7 +191,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             self.cursor.execute('insert into transaction_outputs values (?, ?, ?, ?, ?, ?)',
                                 (transaction['hash'],
                                  b['hash'],
-                                 transaction['index'],
+                                 transaction['input']['index'],
                                  transaction['output']['status'],
                                  updates,
                                  transaction['output']['result']))

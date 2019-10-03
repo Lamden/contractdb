@@ -50,6 +50,8 @@ class TestRPC(TestCase):
         self.rpc.driver.set_contract(name='submission',
                                 code=contract)
 
+        self.rpc.driver.commit()
+
         self.e = Executor(currency_contract='erc20_clone', metering=False)
 
         self.e.execute(**TEST_SUBMISSION_KWARGS,
@@ -344,17 +346,16 @@ def stu():
 
 class TestRPCBlockDriver(TestCase):
     def setUp(self):
-        self.rpc = rpc.StateInterface(driver=ContractDriver(), engine=Engine(),
+        self.rpc = rpc.StateInterface(driver=ContractDBDriver(), engine=Engine(),
                                       compiler=ContractingCompiler(), blocks=SQLLiteBlockStorageDriver())
 
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                                code=contract,
-                                author='sys')
+                                code=contract)
 
         self.e = Executor(currency_contract='erc20_clone', metering=False)
 
@@ -371,12 +372,11 @@ class TestRPCBlockDriver(TestCase):
     def test_run_works_same_as_blocks_not_stored(self):
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                                     code=contract,
-                                     author='sys')
+                                     code=contract)
 
         contract = '''
 owner = Variable()
@@ -413,12 +413,11 @@ def get_owner():
     def test_run_blocks_stores_block(self):
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                                     code=contract,
-                                     author='sys')
+                                     code=contract)
 
         contract = '''
 owner = Variable()
@@ -459,13 +458,11 @@ def get_owner():
     def test_run_all_stores_block_and_equals_retrieved_block(self):
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                                     code=contract,
-                                     author='sys')
-
+                                     code=contract)
         contract = '''
 owner = Variable()
 

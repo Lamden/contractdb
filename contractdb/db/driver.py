@@ -17,3 +17,15 @@ class ContractDBDriver(ContractDriver):
 
     def clear_sets(self):
         self.sets = {}
+
+    def set_contract(self, name, code, owner=None, overwrite=False):
+        super().set_contract(name, code, owner, overwrite)
+        self.commit()
+
+    def get_key(self, contract, variable, key):
+        if key is None:
+            response = self.get('{}.{}'.format(contract, variable))
+        else:
+            response = self.get('{}.{}:{}'.format(contract, variable, key))
+
+        return response
