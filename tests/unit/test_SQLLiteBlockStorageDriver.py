@@ -1,5 +1,9 @@
 from unittest import TestCase
-from contractdb.db.chain import SQLLiteBlockStorageDriver
+from contractdb.db.chain import SQLLiteBlockStorageDriver, \
+    BlockIndexNotSequentialError, \
+    BlockHashAlreadyExistsError, \
+    BlockIndexAlreadyExistsError, \
+    TransactionHashAlreadyExistsError
 
 
 class TestSQLLiteBlockStorageDriver(TestCase):
@@ -128,7 +132,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
         self.chain.conn.commit()
 
     def tearDown(self):
-        self.chain.conn.close()
+        #self.chain.conn.close()
+        pass
 
     def test_get_block_by_hash(self):
         b = self.chain.get_block_by_hash('hello')
@@ -147,3 +152,61 @@ class TestSQLLiteBlockStorageDriver(TestCase):
     def test_get_tx_by_hash(self):
         tx = self.chain.get_transaction_by_hash('uuu')
         self.assertEqual(tx, self.b2['transactions'][1])
+
+    def test_storing_block_with_same_hash_fails(self):
+        b = {
+            'hash': 'hello',
+            'index': 2,
+            'transactions': []
+        }
+
+        with self.assertRaises(BlockHashAlreadyExistsError):
+            self.chain.insert_block(b)
+
+    def test_storing_block_not_sequential_fails(self):
+        b = {
+            'hash': 'blahblahblah',
+            'index': 100,
+            'transactions': []
+        }
+
+        with self.assertRaises(BlockIndexNotSequentialError):
+            self.chain.insert_block(b)
+
+    def test_storing_block_with_same_index_fails(self):
+        b = {
+            'hash': 'blahblahblah2',
+            'index': 0,
+            'transactions': []
+        }
+
+        with self.assertRaises(BlockIndexAlreadyExistsError):
+            self.chain.insert_block(b)
+
+    def test_storing_block_with_same_tx_hash_fails(self):
+        b = {
+            'hash': 'helloxxx',
+            'index': 2,
+            'transactions': [
+                {
+                    'hash': 'yyy',
+                    'input': {
+                        'index': 0,
+                        'sender': 'afw',
+                        'signature': '3y3y',
+                        'payload': {
+                            'contract': 'absfsd',
+                            'function': 'ywwww',
+                            'arguments': {
+                                'code': 123,
+                                'hello': 555,
+                                'sdf': 'dsfg'
+                            }
+                        }
+                    },
+                }
+            ]
+        }
+
+        with self.assertRaises(TransactionHashAlreadyExistsError):
+            self.chain.insert_block(b)

@@ -54,7 +54,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         self.setup()
 
     def setup(self):
-        self.cursor.execute('create table if not exists blocks (hash text primary key, idx integer)')
+        self.cursor.execute('create table if not exists blocks (hash text primary key, idx integer unique)')
 
         self.cursor.execute('create table if not exists transaction_inputs'
                             '(hash text primary key, parent_block text, block_index integer, sender text, '
@@ -243,7 +243,8 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         if b['index'] != self.height() + 1:
             raise BlockIndexNotSequentialError
 
-        res_inp = self.cursor.execute('select * from transaction_inputs where hash = ?', (b['hash'],))
-        res_out = self.cursor.execute('select * from transaction_outputs where hash = ?', (b['hash'],))
-        if res_inp.fetchone() is not None or res_out.fetchone() is not None:
-            raise TransactionHashAlreadyExistsError
+        for tx in b['transactions']:
+            res_inp = self.cursor.execute('select * from transaction_inputs where hash = ?', (tx['hash'],))
+            res_out = self.cursor.execute('select * from transaction_outputs where hash = ?', (tx['hash'],))
+            if res_inp.fetchone() is not None or res_out.fetchone() is not None:
+                raise TransactionHashAlreadyExistsError
