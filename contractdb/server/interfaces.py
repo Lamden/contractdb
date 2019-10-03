@@ -167,7 +167,7 @@ class StateInterface:
             return
 
         if arguments is None:
-            arguments = {}
+            return
 
         func = self.command_map.get(command)
 

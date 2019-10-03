@@ -1,4 +1,4 @@
-from contracting.db.encoder import encode
+from contracting.db.encoder import encode, decode
 from contractdb.utils import hash_bytes
 
 import sqlite3
@@ -99,7 +99,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
                 'output': {
                     'status': status,
                     'updates': updates_unpacked,
-                    'result': result
+                    'result': decode(result)
                 }
             }
 
@@ -165,7 +165,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             'output': {
                 'status': status,
                 'updates': updates_unpacked,
-                'result': result
+                'result': decode(result)
             }
         }
 
@@ -194,7 +194,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
                                  transaction['input']['index'],
                                  transaction['output']['status'],
                                  updates,
-                                 transaction['output']['result']))
+                                 encode(transaction['output']['result'])))
 
         self.conn.commit()
 
