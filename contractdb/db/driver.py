@@ -10,6 +10,8 @@ class ContractDBDriver(ContractDriver):
 
         # Tests if access to the DB is available
         self.sets = {}
+        self.height_key = '__H'
+        self.latest_hash_key = '__L'
 
     def set(self, key, value):
         self.sets[key] = encode(value)
@@ -29,3 +31,19 @@ class ContractDBDriver(ContractDriver):
             response = self.get('{}.{}:{}'.format(contract, variable, key))
 
         return response
+
+    def get_height(self):
+        return self.get(self.height_key)
+
+    def set_height(self, v):
+        self.set(self.height_key, v)
+
+    height = property(get_height, set_height)
+
+    def get_latest_hash(self):
+        return self.get(self.latest_hash_key)
+
+    def set_latest_hash(self, v):
+        self.set(self.latest_hash_key, v)
+
+    latest_hash = property(get_latest_hash, set_latest_hash)

@@ -1,9 +1,9 @@
 from contractdb.execution.executor import Engine
-from contractdb import utils
-import struct
 from contractdb.db.chain import BlockStorageDriver
-
 from contractdb.compilation.helpers import CodeHelper
+from contractdb import utils
+
+import struct
 
 NO_CONTRACT = 1
 NO_VARIABLE = 2
@@ -114,6 +114,10 @@ class StateInterface:
             result['hash'] = new_tx_hash
 
             stored_block = self.blocks.store_txs([result])
+
+            self.engine.driver.latest_hash = self.blocks.latest_hash()
+            self.engine.driver.height = self.blocks.height()
+
             return stored_block
         else:
             return result
@@ -148,6 +152,10 @@ class StateInterface:
 
         if self.blocks_enabled:
             stored_block = self.blocks.store_txs(results)
+
+            self.engine.driver.latest_hash = self.blocks.latest_hash()
+            self.engine.driver.height = self.blocks.height()
+
             return stored_block
 
         else:

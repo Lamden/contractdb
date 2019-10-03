@@ -6,6 +6,22 @@ import json
 import os
 
 
+class BlockHashAlreadyExistsError(Exception):
+    pass
+
+
+class BlockIndexAlreadyExistsError(Exception):
+    pass
+
+
+class BlockIndexNotSequentialError(Exception):
+    pass
+
+
+class TransactionHashAlreadyExistsError(Exception):
+    pass
+
+
 class BlockStorageDriver:
     def get_block_by_hash(self, h: str):
         raise NotImplementedError
@@ -51,7 +67,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         self.cursor.execute('select idx from blocks order by idx desc')
         h = self.cursor.fetchone()
         if h is None:
-            return 0
+            return -1
         return h[0]
 
     def latest_hash(self):
@@ -172,6 +188,8 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         return tx
 
     def insert_block(self, b: dict):
+        self.validate_block(b)
+
         self.cursor.execute('insert into blocks values (?, ?)', (b['hash'], b['index']))
 
         for transaction in b['transactions']:
@@ -212,3 +230,20 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
         self.insert_block(block_dict)
 
         return block_dict
+
+    def validate_block(self, b):
+        res = self.cursor.execute('select * from blocks where hash = ?', (b['hash'], ))
+        if res.fetchone() is not None:
+            raise BlockHashAlreadyExistsError
+
+        res = self.cursor.execute('select * from blocks where idx = ?', (b['index'],))
+        if res.fetchone() is not None:
+            raise BlockIndexAlreadyExistsError
+
+        if b['index'] != self.height() + 1:
+            raise BlockIndexNotSequentialError
+
+        res_inp = self.cursor.execute('select * from transaction_inputs where hash = ?', (b['hash'],))
+        res_out = self.cursor.execute('select * from transaction_outputs where hash = ?', (b['hash'],))
+        if res_inp.fetchone() is not None or res_out.fetchone() is not None:
+            raise TransactionHashAlreadyExistsError

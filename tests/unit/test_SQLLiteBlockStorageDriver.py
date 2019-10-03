@@ -14,7 +14,7 @@ class TestSQLLiteBlockStorageDriver(TestCase):
 
         self.b = {
             'hash': 'hello',
-            'index': 123,
+            'index': 0,
             'transactions': [
                  {
                      'hash': 'xxx',
@@ -69,7 +69,7 @@ class TestSQLLiteBlockStorageDriver(TestCase):
 
         self.b2 = {
             'hash': 'hello2',
-            'index': 124,
+            'index': 1,
             'transactions': [
                 {
                     'hash': 'yyy',
@@ -135,11 +135,11 @@ class TestSQLLiteBlockStorageDriver(TestCase):
         self.assertEqual(b, self.b)
 
     def test_get_block_by_index(self):
-        b = self.chain.get_block_by_index(124)
+        b = self.chain.get_block_by_index(1)
         self.assertEqual(b, self.b2)
 
     def test_height(self):
-        self.assertEqual(self.chain.height(), 124)
+        self.assertEqual(self.chain.height(), 1)
 
     def test_latest_hash(self):
         self.assertEqual(self.chain.latest_hash(), 'hello2')

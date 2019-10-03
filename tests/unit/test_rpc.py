@@ -443,7 +443,7 @@ def get_owner():
                          'name': 'stu_bucks'
                      })
 
-        self.assertEqual(self.rpc.blocks.height(), 0)
+        self.assertEqual(self.rpc.blocks.height(), -1)
 
         result = self.rpc.run(tx)
 
@@ -453,7 +453,7 @@ def get_owner():
 
         self.assertEqual(owner, json.dumps(pk))
 
-        self.assertEqual(self.rpc.blocks.height(), 1)
+        self.assertEqual(self.rpc.blocks.height(), 0)
 
     def test_run_all_stores_block_and_equals_retrieved_block(self):
         self.rpc.driver.flush()
