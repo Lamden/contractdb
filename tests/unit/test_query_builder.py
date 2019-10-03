@@ -1,7 +1,7 @@
 from unittest import TestCase
-from contracting.db import query_builder
-from contracting.db import types
-from contracting.db.filters import Filters
+from contractdb.db import query_builder
+from contractdb.db import types
+from contractdb.db.filters import Filters
 
 
 class TestQueryBuilder(TestCase):

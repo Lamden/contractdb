@@ -1,12 +1,12 @@
 from unittest import TestCase
-from contracting.server import interfaces as rpc
+from contractdb.server import interfaces as rpc
 from contracting.client import ContractingClient
 from contracting.execution.executor import Executor
-from contracting.execution.executor import Engine
+from contractdb.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.db.driver import ContractDriver
-from contracting.db.chain import SQLLiteBlockStorageDriver
-from contracting.utils import make_tx
+from contractdb.db.chain import SQLLiteBlockStorageDriver
+from contractdb.utils import make_tx
 import nacl.signing
 import json
 
@@ -44,12 +44,11 @@ class TestRPC(TestCase):
 
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                                code=contract,
-                                author='sys')
+                                code=contract)
 
         self.e = Executor(currency_contract='erc20_clone', metering=False)
 

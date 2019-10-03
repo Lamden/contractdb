@@ -1,5 +1,5 @@
 from unittest import TestCase
-from contracting.db.chain import SQLLiteBlockStorageDriver
+from contractdb.db.chain import SQLLiteBlockStorageDriver
 
 
 class TestSQLLiteBlockStorageDriver(TestCase):
@@ -36,7 +36,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
                          'updates': {
                              'stu': 'cool',
                              'monica': 'lame'
-                         }
+                         },
+                         'result': 0,
                      }
                  },
                  {
@@ -59,7 +60,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
                          'updates': {
                              'stu': 'cool',
                              'monica': 'lame'
-                         }
+                         },
+                         'result': 0,
                      }
                  }
              ]
@@ -90,7 +92,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
                         'updates': {
                             'stu': 'cool',
                             'monica': 'lame'
-                        }
+                        },
+                        'result': 0,
                     }
                 },
                 {
@@ -113,7 +116,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
                         'updates': {
                             'stu': 'cool',
                             'monica': 'lame'
-                        }
+                        },
+                        'result': 0,
                     }
                 }
             ]
@@ -129,13 +133,16 @@ class TestSQLLiteBlockStorageDriver(TestCase):
     def test_get_block_by_hash(self):
         b = self.chain.get_block_by_hash('hello')
         self.assertEqual(b, self.b)
+        self.chain.conn.close()
 
     def test_get_block_by_index(self):
         b = self.chain.get_block_by_index(124)
         self.assertEqual(b, self.b2)
+        self.chain.conn.close()
 
     def test_height(self):
         self.assertEqual(self.chain.height(), 124)
+        self.chain.conn.close()
 
     def test_latest_hash(self):
         self.assertEqual(self.chain.latest_hash(), 'hello2')

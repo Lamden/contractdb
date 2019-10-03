@@ -8,3 +8,4 @@ plyvel
 astor
 transitions
 aiohttp
+contracting

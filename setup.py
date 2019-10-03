@@ -52,7 +52,7 @@ class ve_build_ext(build_ext):
             raise
 
 setup(
-    name='contracting',
+    name='contractdb',
     version=__version__,
     description='Python-based smart contract language and interpreter.',
     packages=find_packages(),

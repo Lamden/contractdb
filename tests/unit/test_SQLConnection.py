@@ -1,7 +1,7 @@
 from unittest import TestCase
-from contracting.db import state
-from contracting.db import types
-from contracting.db.filters import Filters
+from contractdb.db import state
+from contractdb.db import types
+from contractdb.db.filters import Filters
 import sqlite3
 import os
 

@@ -1,13 +1,14 @@
 from unittest import TestCase
-from contracting.db.driver import ContractDriver
-from contracting.execution.executor import Executor, Engine
+from contractdb.db.driver import ContractDriver
+from contracting.execution.executor import Executor
+from contractdb.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
-from contracting.utils import make_tx
-from contracting.db.state import SQLContractStorageDriver
+from contractdb.utils import make_tx
+from contractdb.db.state import SQLContractStorageDriver
 import nacl.signing
 import marshal
 
-from contracting.db.state import SQLDriver
+from contractdb.db.state import SQLDriver
 
 from functools import partial
 
@@ -43,7 +44,7 @@ class TestExecutor(TestCase):
 
         self.key = nacl.signing.SigningKey.generate()
 
-        with open('../../contracting/contracts/submissionsql.s.py') as f:
+        with open('../../contractdb/contracts/submissionsql.s.py') as f:
             contract = f.read()
 
         self.s.create_contract_space(space='submissionsql',

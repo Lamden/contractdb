@@ -1,12 +1,12 @@
 from unittest import TestCase
 import nacl.signing
 import json
-from contracting.execution.executor import Engine
-from contracting.db.driver import ContractDriver
-from contracting.utils import make_tx
+from contractdb.execution.executor import Engine
+from contractdb.db.driver import ContractDBDriver
+from contractdb.utils import make_tx
 from contracting.db.encoder import encode
 
-driver = ContractDriver()
+driver = ContractDBDriver()
 
 
 class TestEngine(TestCase):
@@ -148,12 +148,11 @@ class TestEngine(TestCase):
     def test_submission_contract_works_on_engine(self):
         driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         driver.set_contract(name='submission',
-                            code=contract,
-                            author='sys')
+                            code=contract)
 
         contract = '''
 owner = Variable()
@@ -193,6 +192,8 @@ def get_owner():
         e = Engine()
 
         output = e.run(tx)
+
+        print(output)
 
         owner = output['updates'].get('stu_bucks.owner')
 
@@ -278,12 +279,11 @@ def get_owner():
     def test_engine_raises_py_exception_if_assert_fails(self):
         driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         driver.set_contract(name='submission',
-                            code=contract,
-                            author='sys')
+                            code=contract)
 
         contract = '''
         owner = Variable()
