@@ -4,7 +4,7 @@ from contracting.client import ContractingClient
 from contracting.execution.executor import Executor
 from contractdb.execution.executor import Engine
 from contracting.compilation.compiler import ContractingCompiler
-from contracting.db.driver import ContractDriver
+from contractdb.db.driver import ContractDBDriver
 from contractdb.db.chain import SQLLiteBlockStorageDriver
 from contractdb.utils import make_tx
 import nacl.signing
@@ -40,7 +40,7 @@ TEST_SUBMISSION_KWARGS = {
 
 class TestRPC(TestCase):
     def setUp(self):
-        self.rpc = rpc.StateInterface(driver=ContractDriver(), engine=Engine(), compiler=ContractingCompiler())
+        self.rpc = rpc.StateInterface(driver=ContractDBDriver(), engine=Engine(), compiler=ContractingCompiler())
 
         self.rpc.driver.flush()
 
@@ -65,10 +65,8 @@ def stu():
 '''
 
         name = 'stustu'
-        author = 'woohoo'
-        _t = 'test'
 
-        self.rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        self.rpc.driver.set_contract(name, contract)
 
         response = self.rpc.get_contract('stustu')
 
@@ -88,10 +86,8 @@ def stu():
 '''
 
         name = 'stustu'
-        author = 'woohoo'
-        _t = 'test'
 
-        self.rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        self.rpc.driver.set_contract(name, contract)
 
         response = self.rpc.get_methods('stustu')
 
@@ -175,12 +171,11 @@ def stu():
     def test_run_tx(self):
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                            code=contract,
-                            author='sys')
+                                     code=contract)
 
         contract = '''
 owner = Variable()
@@ -217,12 +212,11 @@ def get_owner():
     def test_run_all_tx(self):
         self.rpc.driver.flush()
 
-        with open('../../contracting/contracts/submission.s.py') as f:
+        with open('../../contractdb/contracts/submission.s.py') as f:
             contract = f.read()
 
         self.rpc.driver.set_contract(name='submission',
-                                code=contract,
-                                author='sys')
+                                code=contract,)
 
         contract = '''
 owner = Variable()
@@ -286,7 +280,8 @@ def private(message):
     print(message)
 '''
 
-        compiled_code = '''def public():
+        compiled_code = '''@__export('__main__')
+def public():
     __private('hello')
 
 
@@ -305,10 +300,8 @@ def stu():
 '''
 
         name = 'stustu'
-        author = 'woohoo'
-        _t = 'test'
 
-        self.rpc.driver.set_contract(name, contract, author=author, _type=_t)
+        self.rpc.driver.set_contract(name, contract)
 
         command = {'command': 'get_contract',
                    'arguments': {

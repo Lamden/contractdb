@@ -4,7 +4,7 @@ import zmq.asyncio
 from contractdb.server.interfaces import StateInterface
 from contractdb.db.chain import SQLLiteBlockStorageDriver
 from contractdb.execution.executor import Engine
-from contractdb.db.state import SQLDriver
+from contractdb.db.driver import ContractDBDriver
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.db.encoder import encode, decode
 
@@ -24,7 +24,7 @@ class Server:
 
         self.running = False
 
-        self.interface = StateInterface(driver=SQLDriver(),
+        self.interface = StateInterface(driver=ContractDBDriver(),
                                         compiler=ContractingCompiler(),
                                         engine=Engine(),
                                         blocks=SQLLiteBlockStorageDriver())

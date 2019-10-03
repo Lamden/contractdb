@@ -2,8 +2,7 @@ import importlib
 import decimal
 from contracting.execution import runtime
 from contractdb.db.driver import ContractDBDriver
-from contractdb.db.state import SQLContractStorageDriver
-from contracting.execution.module import install_database_loader, uninstall_builtins
+from contracting.execution.module import install_database_loader
 from contracting import config
 from contracting.db.encoder import encode
 
