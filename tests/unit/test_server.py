@@ -1,5 +1,5 @@
 from unittest import TestCase
-from contractdb.server.server import Server
+from contractdb.server import Server
 import asyncio
 import zmq
 import json

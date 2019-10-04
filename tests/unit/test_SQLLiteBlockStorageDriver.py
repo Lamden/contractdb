@@ -1,10 +1,10 @@
 from unittest import TestCase
-from contractdb.db.chain import SQLLiteBlockStorageDriver, \
+from contractdb.chain import SQLLiteBlockStorageDriver, \
     BlockIndexNotSequentialError, \
     BlockHashAlreadyExistsError, \
     BlockIndexAlreadyExistsError, \
     TransactionHashAlreadyExistsError
-from contractdb.db.driver import ContractDBDriver
+from contractdb.driver import ContractDBDriver
 
 class TestSQLLiteBlockStorageDriver(TestCase):
     def setUp(self):

@@ -1,4 +1,4 @@
-from .server.server import start_server
+from contractdb.server import start_server
 
 C = u'''
 **************************************************

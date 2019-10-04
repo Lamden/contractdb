@@ -1,11 +1,11 @@
 from unittest import TestCase
-from contractdb.server import interfaces as rpc
+from contractdb import interfaces as rpc
 from contracting.client import ContractingClient
 from contracting.execution.executor import Executor
-from contractdb.execution.executor import Engine
+from contractdb.engine import Engine
 from contracting.compilation.compiler import ContractingCompiler
-from contractdb.db.driver import ContractDBDriver
-from contractdb.db.chain import SQLLiteBlockStorageDriver
+from contractdb.driver import ContractDBDriver
+from contractdb.chain import SQLLiteBlockStorageDriver
 from contractdb.utils import make_tx
 import nacl.signing
 import json

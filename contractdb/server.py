@@ -1,10 +1,10 @@
 import asyncio
 import zmq
 import zmq.asyncio
-from contractdb.server.interfaces import StateInterface
-from contractdb.db.chain import SQLLiteBlockStorageDriver
-from contractdb.execution.executor import Engine
-from contractdb.db.driver import ContractDBDriver
+from contractdb.interfaces import StateInterface
+from contractdb.chain import SQLLiteBlockStorageDriver
+from contractdb.engine import Engine
+from contractdb.driver import ContractDBDriver
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.db.encoder import encode, decode
 

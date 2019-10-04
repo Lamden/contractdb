@@ -1,6 +1,6 @@
 from contracting.db.encoder import encode, decode
 from contractdb.utils import hash_bytes
-from contractdb.db.driver import ContractDBDriver
+from contractdb.driver import ContractDBDriver
 
 import sqlite3
 import json

@@ -1,8 +1,8 @@
 from unittest import TestCase
 import nacl.signing
 import json
-from contractdb.execution.executor import Engine
-from contractdb.db.driver import ContractDBDriver
+from contractdb.engine import Engine
+from contractdb.driver import ContractDBDriver
 from contractdb.utils import make_tx
 from contracting.db.encoder import encode
 
