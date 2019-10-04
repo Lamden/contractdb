@@ -1,5 +1,5 @@
 from unittest import TestCase
-from contracting.server.server import Server
+from contractdb.server import Server
 import asyncio
 import zmq
 import json
@@ -75,10 +75,8 @@ def stu():
         '''
 
         name = 'stustu'
-        author = 'woohoo'
-        _t = 'test'
 
-        m.interface.driver.set_contract(name, contract, author=author, _type=_t)
+        m.interface.driver.set_contract(name, contract)
 
         command = {'command': 'get_contract',
                    'arguments': {

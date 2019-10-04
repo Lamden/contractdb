@@ -1,5 +1,5 @@
 from unittest import TestCase
-from contracting.schema.validator import *
+from contractdb.schema.validator import *
 
 
 class TestSchemaValidator(TestCase):
@@ -82,3 +82,4 @@ schema:
 
         with self.assertRaises(TypeError):
             is_valid(d)
+
