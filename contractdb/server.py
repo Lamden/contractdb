@@ -8,6 +8,7 @@ from contractdb.driver import ContractDBDriver
 from contracting.compilation.compiler import ContractingCompiler
 from contracting.db.encoder import encode, decode
 
+import logging
 
 class Server:
     def __init__(self, port: int, ctx: zmq.Context=zmq.asyncio.Context(), linger=2000, poll_timeout=2000):
@@ -28,6 +29,8 @@ class Server:
                                         compiler=ContractingCompiler(),
                                         engine=Engine(),
                                         blocks=SQLLiteBlockStorageDriver())
+
+        self.logger = logging.getLogger('Server')
 
     async def serve(self):
         self.setup_socket()
@@ -53,13 +56,13 @@ class Server:
         # Try to deserialize the message and run it through the rpc service
         try:
             json_command = decode(msg.decode())
-            print('Got: {}'.format(json_command))
+
+            self.logger.info('Received command: {}'.format(json_command))
+
             result = self.interface.process_json_rpc_command(json_command)
-            print('Returning: {}'.format(result))
 
         # If this fails, just set the result to None
         except Exception as e:
-            print(str(e))
             result = None
 
         # Try to send the message now. This persists if the socket fails.

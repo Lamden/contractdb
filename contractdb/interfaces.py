@@ -4,6 +4,7 @@ from contractdb.helpers import CodeHelper
 from contractdb import utils
 
 import struct
+import logging
 
 NO_CONTRACT = 1
 NO_VARIABLE = 2
@@ -45,6 +46,8 @@ class StateInterface:
                 'block_hash': self.blocks.latest_hash,
             })
 
+        self.logger = logging.getLogger('StateInterface')
+
     def ok(self, *args):
         return {'result': 'ok'}
 
@@ -70,7 +73,7 @@ class StateInterface:
 
         return funcs
 
-    def get_var(self, contract: str, variable: str, key: str=None):
+    def get_var(self, contract: str, variable: str, key: list=None):
         contract_code = self.driver.get_contract(contract)
 
         if contract_code is None:
@@ -78,7 +81,14 @@ class StateInterface:
                 'status': NO_CONTRACT
             }
 
-        response = self.driver.get_key(contract, variable, key)
+        if key is not None:
+            key = [key] if type(key) is not list else key
+        else:
+            key = []
+
+        k = self.driver.make_key(key=contract, field=variable, args=key)
+
+        response = self.driver.get(k)
 
         if response is None:
             return {
