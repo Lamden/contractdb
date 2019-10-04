@@ -1,5 +1,6 @@
 from contracting.db.encoder import encode, decode
 from contractdb.utils import hash_bytes
+from contractdb.db.driver import ContractDBDriver
 
 import sqlite3
 import json
@@ -141,6 +142,7 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
 
     def get_block_by_index(self, i: int):
         self.cursor.execute('select * from blocks where idx=?', (i,))
+
         block = self.cursor.fetchone()
 
         h = block[0]
@@ -248,3 +250,14 @@ class SQLLiteBlockStorageDriver(BlockStorageDriver):
             res_out = self.cursor.execute('select * from transaction_outputs where hash = ?', (tx['hash'],))
             if res_inp.fetchone() is not None or res_out.fetchone() is not None:
                 raise TransactionHashAlreadyExistsError
+
+    def sync_state(self, state_driver: ContractDBDriver):
+        for i in range(state_driver.height + 1, self.height() + 1):
+            block = self.get_block_by_index(i)
+
+            for tx in block['transactions']:
+                for k, v in tx['output']['updates'].items():
+                    state_driver.set(k, v)
+
+            state_driver.height = i
+            state_driver.latest_hash = block['hash']

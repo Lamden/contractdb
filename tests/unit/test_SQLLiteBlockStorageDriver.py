@@ -4,7 +4,7 @@ from contractdb.db.chain import SQLLiteBlockStorageDriver, \
     BlockHashAlreadyExistsError, \
     BlockIndexAlreadyExistsError, \
     TransactionHashAlreadyExistsError
-
+from contractdb.db.driver import ContractDBDriver
 
 class TestSQLLiteBlockStorageDriver(TestCase):
     def setUp(self):
@@ -20,55 +20,55 @@ class TestSQLLiteBlockStorageDriver(TestCase):
             'hash': 'hello',
             'index': 0,
             'transactions': [
-                 {
-                     'hash': 'xxx',
-                     'input': {
-                         'index': 0,
-                         'sender': 'stu',
-                         'signature': 'asd',
-                         'payload': {
-                             'contract': 'stustu',
-                             'function': 'send',
-                             'arguments': {
-                                 'code': 123,
-                                 'hello': 555
-                             }
-                         }
-                     },
-                     'output': {
-                         'status': 0,
-                         'updates': {
-                             'stu': 'cool',
-                             'monica': 'lame'
-                         },
-                         'result': {}
-                     }
-                 },
-                 {
-                     'hash': 'xxy',
-                     'input': {
-                         'index': 1,
-                         'sender': 'stu',
-                         'signature': 'asd',
-                         'payload': {
-                             'contract': 'stustu',
-                             'function': 'send',
-                             'arguments': {
-                                 'code': 123,
-                                 'hello': 555
-                             }
-                         }
-                     },
-                     'output': {
-                         'status': 0,
-                         'updates': {
-                             'stu': 'cool',
-                             'monica': 'lame'
-                         },
-                         'result': {}
-                     }
-                 }
-             ]
+                {
+                    'hash': 'xxx',
+                    'input': {
+                        'index': 0,
+                        'sender': 'stu',
+                        'signature': 'asd',
+                        'payload': {
+                            'contract': 'stustu',
+                            'function': 'send',
+                            'arguments': {
+                                'code': 123,
+                                'hello': 555
+                            }
+                        }
+                    },
+                    'output': {
+                        'status': 0,
+                        'updates': {
+                            'stu': 'cool',
+                            'monica': 'lame'
+                        },
+                        'result': {}
+                    }
+                },
+                {
+                    'hash': 'xxy',
+                    'input': {
+                        'index': 1,
+                        'sender': 'stu',
+                        'signature': 'asd',
+                        'payload': {
+                            'contract': 'stustu',
+                            'function': 'send',
+                            'arguments': {
+                                'code': 123,
+                                'hello': 555
+                            }
+                        }
+                    },
+                    'output': {
+                        'status': 0,
+                        'updates': {
+                            'hello': 'there',
+                            'obj': [1, 2, 3]
+                        },
+                        'result': {}
+                    }
+                }
+            ]
         }
 
         self.b2 = {
@@ -94,8 +94,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
                     'output': {
                         'status': 0,
                         'updates': {
-                            'stu': 'cool',
-                            'monica': 'lame'
+                            'another': 'one',
+                            'true': False
                         },
                         'result': {}
                     }
@@ -118,8 +118,8 @@ class TestSQLLiteBlockStorageDriver(TestCase):
                     'output': {
                         'status': 0,
                         'updates': {
-                            'stu': 'cool',
-                            'monica': 'lame'
+                            'dict': {'hi': 123},
+                            'blah': 'blah'
                         },
                         'result': {}
                     }
@@ -132,8 +132,7 @@ class TestSQLLiteBlockStorageDriver(TestCase):
         self.chain.conn.commit()
 
     def tearDown(self):
-        #self.chain.conn.close()
-        pass
+        self.chain.conn.close()
 
     def test_get_block_by_hash(self):
         b = self.chain.get_block_by_hash('hello')
@@ -210,3 +209,17 @@ class TestSQLLiteBlockStorageDriver(TestCase):
 
         with self.assertRaises(TransactionHashAlreadyExistsError):
             self.chain.insert_block(b)
+
+    def test_sync_works_as_expected(self):
+        c = ContractDBDriver()
+
+        self.chain.sync_state(c)
+
+        self.assertEqual(c.get('stu'), 'cool')
+        self.assertEqual(c.get('monica'), 'lame')
+        self.assertEqual(c.get('hello'), 'there')
+        self.assertEqual(c.get('obj'), [1, 2, 3])
+        self.assertEqual(c.get('another'), 'one')
+        self.assertEqual(c.get('true'), False)
+        self.assertEqual(c.get('dict'), {'hi': 123})
+        self.assertEqual(c.get('blah'), 'blah')

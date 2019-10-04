@@ -33,7 +33,7 @@ class ContractDBDriver(ContractDriver):
         return response
 
     def get_height(self):
-        return self.get(self.height_key)
+        return self.get(self.height_key) or -1
 
     def set_height(self, v):
         self.set(self.height_key, v)
@@ -41,7 +41,7 @@ class ContractDBDriver(ContractDriver):
     height = property(get_height, set_height)
 
     def get_latest_hash(self):
-        return self.get(self.latest_hash_key)
+        return self.get(self.latest_hash_key) or '0' * 64
 
     def set_latest_hash(self, v):
         self.set(self.latest_hash_key, v)
