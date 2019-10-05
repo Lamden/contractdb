@@ -1,11 +1,12 @@
 from unittest import TestCase
-import nacl.signing
+# import nacl.signing
 import json
 from contractdb.engine import Engine
 from contractdb.driver import ContractDBDriver
 from contractdb.utils import make_tx
 from contracting.db.encoder import encode
-
+import ecdsa
+import hashlib
 driver = ContractDBDriver()
 
 
@@ -92,9 +93,12 @@ class TestEngine(TestCase):
         self.assertFalse(e.verify_tx_structure(tx))
 
     def test_verify_tx_signature_succeeds(self):
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = {
             'sender': pk,
@@ -110,7 +114,7 @@ class TestEngine(TestCase):
 
         message = json.dumps(tx['payload']).encode()
 
-        sig = nakey.sign(message)[:64].hex()
+        sig = nakey.sign_deterministic(message, hashfunc=hashlib.sha256).hex()
 
         tx['signature'] = sig
 
@@ -119,9 +123,12 @@ class TestEngine(TestCase):
         self.assertTrue(e.verify_tx_signature(tx))
 
     def test_verify_tx_signature_fails(self):
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = {
             'sender': pk,
@@ -137,9 +144,9 @@ class TestEngine(TestCase):
 
         message = json.dumps(tx['payload']).encode()
 
-        sig = nakey.sign(message)[:64].hex()
+        sig = nakey.sign_deterministic(message, hashfunc=hashlib.sha256).hex()
 
-        tx['signature'] = sig[:2]
+        tx['signature'] = 'a' * 128
 
         e = Engine()
 
@@ -170,9 +177,12 @@ def get_owner():
     return owner.get()
         '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = {
             'sender': pk,
@@ -189,7 +199,7 @@ def get_owner():
 
         message = json.dumps(tx['payload']).encode()
 
-        sig = nakey.sign(message)[:64].hex()
+        sig = nakey.sign_deterministic(message, hashfunc=hashlib.sha256).hex()
 
         tx['signature'] = sig
 
@@ -204,9 +214,12 @@ def get_owner():
         self.assertEqual(owner, json.dumps(pk))
 
     def test_make_tx(self):
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = {
             'sender': pk,
@@ -223,7 +236,7 @@ def get_owner():
 
         message = encode(tx['payload']).encode()
 
-        sig = nakey.sign(message)[:64].hex()
+        sig = nakey.sign_deterministic(message, hashfunc=hashlib.sha256).hex()
 
         tx['signature'] = sig
 
@@ -252,9 +265,12 @@ def get_owner():
         self.assertEqual(output['status'], 1)
 
     def test_engine_returns_bad_sig_when_run(self):
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = {
             'sender': pk,
@@ -270,9 +286,9 @@ def get_owner():
 
         message = json.dumps(tx['payload']).encode()
 
-        sig = nakey.sign(message)[:64].hex()
+        sig = nakey.sign_deterministic(message, hashfunc=hashlib.sha256).hex()
 
-        tx['signature'] = sig[:2]
+        tx['signature'] = 'a' * 128
 
         e = Engine()
 
@@ -297,9 +313,12 @@ def get_owner():
             owner.set(ctx.caller)
                 '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = {
             'sender': pk,
@@ -316,7 +335,7 @@ def get_owner():
 
         message = json.dumps(tx['payload']).encode()
 
-        sig = nakey.sign(message)[:64].hex()
+        sig = nakey.sign_deterministic(message, hashfunc=hashlib.sha256).hex()
 
         tx['signature'] = sig
 

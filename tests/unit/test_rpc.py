@@ -231,9 +231,12 @@ def get_owner():
     return owner.get()
                 '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = make_tx(nakey,
                      contract='submission',
@@ -389,9 +392,12 @@ def get_owner():
     return owner.get()
         '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = make_tx(nakey,
                      contract='submission',
@@ -430,9 +436,12 @@ def get_owner():
     return owner.get()
         '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+        #
+        # pk = nakey.verify_key.encode().hex()
 
-        pk = nakey.verify_key.encode().hex()
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = make_tx(nakey,
                      contract='submission',
@@ -474,7 +483,10 @@ def get_owner():
     return owner.get()
                 '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        # nakey = nacl.signing.SigningKey.generate()
+
+        nakey = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = nakey.get_verifying_key().to_string().hex()
 
         tx = make_tx(nakey,
                      contract='submission',
