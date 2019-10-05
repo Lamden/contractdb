@@ -4,9 +4,8 @@ from contractdb.driver import ContractDBDriver
 from contracting.execution.module import install_database_loader
 from contracting.db.encoder import encode
 
-import nacl.signing
-import nacl.exceptions
-
+import ecdsa
+import hashlib
 
 ## Create new executor that takes a transaction JSON thing and executes it. It also enforces the stamps, etc.
 # if that is set in the environment variables
@@ -53,12 +52,19 @@ class Engine:
         signature = bytes.fromhex(tx['signature'])
         pk = bytes.fromhex(tx['sender'])
 
-        key = nacl.signing.VerifyKey(pk)
+        vk = ecdsa.VerifyingKey.from_string(pk, curve=ecdsa.NIST256p, hashfunc=hashlib.sha256)
         try:
-            key.verify(tx_payload_bytes, signature)
-        except nacl.exceptions.BadSignatureError:
+            vk.verify(signature, tx_payload_bytes)
+        except ecdsa.BadSignatureError:
             return False
         return True
+
+        # key = nacl.signing.VerifyKey(pk)
+        # try:
+        #     key.verify(tx_payload_bytes, signature)
+        # except nacl.exceptions.BadSignatureError:
+        #     return False
+        # return True
 
     def run(self, tx: dict, environment={}, part_of_batch=False):
         tx_output = {

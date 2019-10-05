@@ -1,11 +1,11 @@
-import nacl.signing
+import ecdsa
 from contracting.db.encoder import encode
 import hashlib
 
 
-def make_tx(key: nacl.signing.SigningKey, contract, func, arguments={}):
+def make_tx(key: ecdsa.SigningKey, contract, func, arguments={}):
     tx = {
-        'sender': key.verify_key.encode().hex(),
+        'sender': key.get_verifying_key().to_string().hex(),
         'signature': None,
         'payload': {
             'contract': contract,
@@ -16,7 +16,7 @@ def make_tx(key: nacl.signing.SigningKey, contract, func, arguments={}):
 
     message = encode(tx['payload']).encode()
 
-    signature = key.sign(message)[:64]
+    signature = key.sign_deterministic(message, hashlib.sha256)[:64]
 
     tx['signature'] = signature.hex()
 

@@ -7,9 +7,9 @@ from contracting.compilation.compiler import ContractingCompiler
 from contractdb.driver import ContractDBDriver
 from contractdb.chain import SQLLiteBlockStorageDriver
 from contractdb.utils import make_tx
-import nacl.signing
 import json
-
+import ecdsa
+import hashlib
 client = ContractingClient()
 
 
@@ -191,11 +191,10 @@ def get_owner():
     return owner.get()
         '''
 
-        nakey = nacl.signing.SigningKey.generate()
+        key = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+        pk = key.get_verifying_key().to_string().hex()
 
-        pk = nakey.verify_key.encode().hex()
-
-        tx = make_tx(nakey,
+        tx = make_tx(key,
                      contract='submission',
                      func='submit_contract',
                      arguments={
