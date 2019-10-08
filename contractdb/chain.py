@@ -49,7 +49,7 @@ class BlockStorageDriver:
 
 
 class SQLLiteBlockStorageDriver(BlockStorageDriver):
-    def __init__(self, filename=os.path.expanduser('~/contracts/blocks.db')):
+    def __init__(self, filename=os.path.expanduser('~/blocks.db')):
         self.conn = sqlite3.connect(filename)
         self.cursor = self.conn.cursor()
         self.setup()
