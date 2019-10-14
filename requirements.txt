@@ -1,4 +1,5 @@
 contracting
+click
 zmq
 nacl
 yaml

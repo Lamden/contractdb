@@ -6,7 +6,12 @@ __version__ = '0.1.1'
 
 requirements = [
     'pyzmq',
-    'ecdsa'
+    'ecdsa',
+    'contracting',
+    'click',
+    'zmq',
+    'PyNaCl',
+    'PyYAML'
 ]
 
 
