@@ -5,6 +5,7 @@ from contracting.execution.module import install_database_loader
 from contracting.db.encoder import encode
 
 import ecdsa
+import logging
 import hashlib
 
 ## Create new executor that takes a transaction JSON thing and executes it. It also enforces the stamps, etc.
@@ -25,6 +26,7 @@ class Engine:
 
         self.driver = driver
 
+        self.log = logging.getLogger('Engine')
         self.stamps_enabled = stamps_enabled
         self.timestamps_enabled = timestamps_enabled
 
@@ -79,11 +81,13 @@ class Engine:
 
         # Verify the structure of the tx
         if not self.verify_tx_structure(tx, part_of_batch):
+            self.log.error("Malformed transaction {}".format(tx))
             tx_output['status'] = MALFORMED_TX
             return tx_output
 
         # Verify the signature of the tx
         if not self.verify_tx_signature(tx):
+            self.log.error("Invalid signature for the transaction {}".format(tx))
             tx_output['status'] = INVALID_SIG
             return tx_output
 
