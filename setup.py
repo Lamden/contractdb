@@ -23,7 +23,7 @@ setup(
     install_requires=requirements,
     entry_points='''
         [console_scripts]
-        interact=interact:cli
+        lchain=contractdb.lchain:cli
     ''',
     url='https://github.com/Lamden/contracting',
     author='Lamden',
