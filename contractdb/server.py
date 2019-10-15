@@ -30,9 +30,11 @@ class Server:
                                         engine=Engine(),
                                         blocks=SQLLiteBlockStorageDriver())
 
-        self.logger = logging.getLogger('Server')
+        self.log = logging.getLogger('Server')
 
     async def serve(self):
+        self.log.info("ContractDB server is starting .. ")
+
         self.setup_socket()
 
         self.running = True
@@ -57,7 +59,7 @@ class Server:
         try:
             json_command = decode(msg.decode())
 
-            self.logger.info('Received command: {}'.format(json_command))
+            self.log.info('Received command: {}'.format(json_command))
 
             result = self.interface.process_json_rpc_command(json_command)
 
