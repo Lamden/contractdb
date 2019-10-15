@@ -8,7 +8,7 @@ requirements = [
     'pyzmq',
     'ecdsa',
     'contracting',
-    'click',
+    'Click',
     'zmq',
     'PyNaCl',
     'PyYAML'
@@ -21,6 +21,10 @@ setup(
     description='Python-based smart contract language and interpreter.',
     packages=find_packages(),
     install_requires=requirements,
+    entry_points='''
+        [console_scripts]
+        interact=interact:cli
+    ''',
     url='https://github.com/Lamden/contracting',
     author='Lamden',
     author_email='team@lamden.io',
