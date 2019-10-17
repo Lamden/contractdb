@@ -22,23 +22,26 @@ def status(si):
 
 
 @cli.command()
+@pass_si
 @click.option('--name', default='None', help='Queries for given contract name')
-def contract(name):
+def contract(si, name):
     """ : Get given contract code"""
     pass
 
 
 @cli.command()
+@pass_si
 @click.option('--code', default='None', help='Give input file for new contract')
 @click.option('--name', help='Name of new contract to run')
-def run(code, name):
+def run(si, code, name):
     """ : Run given tx dict """
     pass
 
 
 @cli.command()
+@pass_si
 @click.option('--path', type=click.File('rb'), help='Give input file for new contract')
-def lint(path):
+def lint(si, path):
     """ : Run linter on given code str """
     code = ""
     while True:
@@ -52,8 +55,9 @@ def lint(path):
     # click.echo(res)
 
 @cli.command()
+@pass_si
 @click.option('--path', type=click.File('rb'), help='Give input file for new contract')
-def compile_contract(path):
+def compile_contract(si, path):
     """ : Compile given code str """
     code = ""
     while True:
@@ -68,16 +72,11 @@ def compile_contract(path):
 
 
 @cli.command()
+@pass_si
 @click.option('--contract', default='None', help='Name of contract')
-def get_vars(contract):
+def get_vars(si, contract):
     """ : Get Vars for given contract """
     pass
-
-
-class interface:
-    def setup( self ):
-        self.si = si.StateInterface(driver=ContractDBDriver(), engine=Engine(), compiler=ContractingCompiler())
-
 
 
 if __name__ == '__main__':
