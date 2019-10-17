@@ -3,21 +3,54 @@ from contractdb.interfaces import StateInterface as si
 
 
 @click.group()
-def cli():
-    pass
+@click.option('--verbose', is_flag=True)
+def cli(verbose):
+    if verbose:
+        click.echo('Verbose Mode - Active')
 
 
 @cli.command()
 def status():
-    """Description: Cli Status"""
+    """ : Cli Status"""
     click.echo('Active')
 
 
 @cli.command()
-@cli.options('--string', default='None')
-def check(string):
-    """Description: State interface check"""
-    click.echo(si.get_contract('stustu'))
+@click.option('--name', default='None', help='Queries for given contract name')
+def contract(name):
+    """ : Get given contract code"""
+    pass
+
+
+@cli.command()
+@click.option('--code', default='None', help='Give input file for new contract')
+@click.option('--name', help='Name of new contract to run')
+def run(code, name):
+    """ : Run given tx dict """
+    pass
+
+
+@cli.command()
+@click.option('--code', default='None', help='Give input file for new contract')
+@click.option('--name', help='Name of new contract to run')
+def lint(code, name):
+    """ : Run linter on given code str """
+    pass
+
+
+@cli.command()
+@click.option('--code', default='None', help='Give input file for new contract')
+@click.option('--name', help='Name of new contract to run')
+def compile_contract(code, name):
+    """ : Compile given code str """
+    pass
+
+
+@cli.command()
+@click.option('--contract', default='None', help='Name of contract')
+def get_vars(contract):
+    """ : Get Vars for given contract """
+    pass
 
 
 if __name__ == '__main__':
