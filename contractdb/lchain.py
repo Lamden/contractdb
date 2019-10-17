@@ -31,19 +31,34 @@ def run(code, name):
 
 
 @cli.command()
-@click.option('--code', default='None', help='Give input file for new contract')
-@click.option('--name', help='Name of new contract to run')
-def lint(code, name):
+@click.option('--path', type=click.File('rb'), help='Give input file for new contract')
+def lint(path):
     """ : Run linter on given code str """
-    pass
+    code = ""
+    while True:
+        chunk = path.read(1024)
+        if not chunk:
+            break
+        code = code + " " + str(chunk)
+    click.echo(code)
 
+    res = si.lint(code=code)
+    click.echo(res)
 
 @cli.command()
-@click.option('--code', default='None', help='Give input file for new contract')
-@click.option('--name', help='Name of new contract to run')
-def compile_contract(code, name):
+@click.option('--path', type=click.File('rb'), help='Give input file for new contract')
+def compile_contract(path):
     """ : Compile given code str """
-    pass
+    code = ""
+    while True:
+        chunk = path.read(1024)
+        if not chunk:
+            break
+        code = code + " " + str(chunk)
+    click.echo(code)
+
+    res = si.compile_code(code = code)
+    click.echo(res)
 
 
 @cli.command()
