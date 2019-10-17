@@ -14,7 +14,6 @@ requirements = [
     'PyYAML'
 ]
 
-
 setup(
     name='contractdb',
     version=__version__,

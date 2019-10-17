@@ -48,7 +48,7 @@ class StateInterface:
 
         self.logger = logging.getLogger('StateInterface')
 
-    def ok(self, *args):
+    def ok(self):
         return {'result': 'ok'}
 
     def get_contract(self, name: str):
