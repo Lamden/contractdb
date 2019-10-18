@@ -1,9 +1,14 @@
 import zmq
-from zcom import services
+import time
+from zcomm import services
+
+from contracting.db.encoder import encode, decode
+
 
 # Defaults
 
-DEFAULT_SOCKET = services._socket('tcp://127.0.0.1:11111')
+DEFAULT_SOCKET = services._socket('tcp://127.0.0.1:2020')
+
 
 def get(socket_id: services.SocketStruct,
         msg: list,
@@ -24,22 +29,31 @@ def get(socket_id: services.SocketStruct,
     socket.setsockopt(zmq.LINGER, linger)
     try:
         socket.connect(str(socket_id))
-        socket.send_multipart(msg)
+        time.sleep(5)
+        print("sending msg")
+        emsg = encode(msg).encode()
+        socket.send_multipart([emsg])
+        print("waiting for rcv")
         response = socket.recv()
+        print("rcv msg")
+        dres = decode(response[0].decode())
         socket.close()
 
-        return response
+        return dres
 
     except Exception as e:
+        print(e)
         socket.close()
         return get(socket_id, msg, ctx, timeout, linger, retries-1)
 
 
 class ChainCmds:
-    def __init__(self, socket_id=constants.DEFAULT_SOCKET, ctx=zmq.Context()):
+    def __init__(self, socket_id=DEFAULT_SOCKET, ctx=zmq.Context()):
         self.socket = socket_id
         self.ctx = ctx
 
     def server_call(self, msg):
-        res = get(self.socket, msg, self.ctx)
+        print(msg)
+        res = get(self.socket, msg, self.ctx, retries=0)
+        print(res)
         return res
