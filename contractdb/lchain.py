@@ -1,5 +1,6 @@
 import click
-from contractdb.interfaces import StateInterface as si
+import json
+from contractdb.server import Server as si
 
 pass_si = click.make_pass_decorator(si)
 
@@ -26,16 +27,17 @@ def status(si):
 @click.option('--name', default='None', help='Queries for given contract name')
 def contract(si, name):
     """ : Get given contract code"""
-    pass
+    click.echo(si.get_contract(name))
 
 
 @cli.command()
 @pass_si
-@click.option('--code', default='None', help='Give input file for new contract')
-@click.option('--name', help='Name of new contract to run')
-def run(si, code, name):
+@click.option('--tx', help='json string')
+def run(si, tx):
     """ : Run given tx dict """
-    pass
+    dict = json.loads(tx)
+    res = si.run(dict)
+    click.echo(res)
 
 
 @cli.command()
@@ -51,8 +53,8 @@ def lint(si, path):
         code = code + " " + str(chunk)
     click.echo(code)
 
-    # res = si.lint(code=code)
-    # click.echo(res)
+    res = si.lint(code=code)
+    click.echo(res)
 
 @cli.command()
 @pass_si
@@ -67,8 +69,8 @@ def compile_contract(si, path):
         code = code + " " + str(chunk)
     click.echo(code)
 
-    # res = si.compile_code(code = code)
-    # click.echo(res)
+    res = si.compile_code(code = code)
+    click.echo(res)
 
 
 @cli.command()
@@ -76,9 +78,8 @@ def compile_contract(si, path):
 @click.option('--contract', default='None', help='Name of contract')
 def get_vars(si, contract):
     """ : Get Vars for given contract """
-    pass
+    click.echo(si.get_vars(contract = contract))
 
 
 if __name__ == '__main__':
-
     cli()

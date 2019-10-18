@@ -3,3 +3,4 @@ click
 zmq
 nacl
 yaml
+zcomm
