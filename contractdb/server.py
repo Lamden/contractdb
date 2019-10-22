@@ -42,8 +42,10 @@ class Server:
             try:
                 event = await self.socket.poll(timeout=self.poll_timeout, flags=zmq.POLLIN)
                 if event:
-                    _id = await self.socket.recv()
-                    msg = await self.socket.recv()
+                    m = await self.socket.recv_multipart()
+                    self.logger.info(f'got {m}')
+                    _id = m[0]
+                    msg = m[1]
                     self.logger.info("id : {}".format(_id))
                     self.logger.info("msg : {}".format(msg))
                     asyncio.ensure_future(self.handle_msg(_id, msg))

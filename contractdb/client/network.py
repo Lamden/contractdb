@@ -8,18 +8,17 @@ import logging
 # Defaults
 
 DEFAULT_SOCKET = services._socket('tcp://127.0.0.1:2020')
-logger = logging.getLogger('Client')
 
 
 def get(socket_id: services.SocketStruct,
-        msg: list,
+        msg: dict,
         ctx: zmq.Context,
         timeout=500,
         linger=2000,
         retries=10,
         dealer=False):
 
-    if retries <= 0:
+    if retries < 0:
         return None
 
     if dealer:
@@ -30,13 +29,13 @@ def get(socket_id: services.SocketStruct,
     socket.setsockopt(zmq.LINGER, linger)
     try:
         socket.connect(str(socket_id))
-        time.sleep(5)
+        #time.sleep(5)
         emsg = encode(msg).encode()
-        logger.info("encoded msg : {}".format(emsg))
-        socket.send_multipart([emsg])
-        logger.info("waiting for rcv")
+        print("encoded msg :", emsg)
+        socket.send(emsg)
+        print("waiting for rcv")
         response = socket.recv()
-        logger.info("rcv msg")
+        print("rcv msg ->", response)
         dres = decode(response[0].decode())
         socket.close()
 
@@ -45,17 +44,20 @@ def get(socket_id: services.SocketStruct,
     except Exception as e:
         print(e)
         socket.close()
-        return get(socket_id, msg, ctx, timeout, linger, retries-1)
+        return get(socket_id, msg, ctx, timeout, linger, retries-1, dealer=True)
 
 
 class ChainCmds:
     def __init__(self, socket_id=DEFAULT_SOCKET, ctx=zmq.Context()):
+        self.logger = logging.getLogger('Client')
+
         self.socket = socket_id
         self.ctx = ctx
 
 
-    def server_call(self, msg: list):
-        print(msg)
-        res = get(self.socket, msg, self.ctx, retries=0)
-        logger.info("Server Res {}".format(res))
+    def server_call(self, msg: dict):
+        print("enter server call")
+        self.logger.info("Server call msg -> {}".format(msg))
+        res = get(self.socket, msg, self.ctx, retries=0, dealer=True)
+        self.logger.info("Server Res {}".format(res))
         return res
