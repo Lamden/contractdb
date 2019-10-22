@@ -31,6 +31,7 @@ class Server:
                                         blocks=SQLLiteBlockStorageDriver())
 
         self.logger = logging.getLogger('Server')
+        self.logger.info("Server init")
 
     async def serve(self):
         self.setup_socket()
@@ -43,10 +44,13 @@ class Server:
                 if event:
                     _id = await self.socket.recv()
                     msg = await self.socket.recv()
+                    self.logger.info("id : {}".format(_id))
+                    self.logger.info("msg : {}".format(msg))
                     asyncio.ensure_future(self.handle_msg(_id, msg))
                     await asyncio.sleep(0)
 
             except zmq.error.ZMQError:
+                self.logger.info('zmq error: {}'.format(zmq.error.ZMQError))
                 self.socket.close()
                 self.setup_socket()
 
@@ -57,7 +61,7 @@ class Server:
         try:
             json_command = decode(msg.decode())
 
-            self.logger.info('Received command: {}'.format(json_command))
+            self.logger.info('Received command: {}, {}'.format(json_command, msg))
 
             result = self.interface.process_json_rpc_command(json_command)
 
@@ -71,10 +75,12 @@ class Server:
             try:
                 msg = encode(result).encode()
 
+                self.logger.info('result sent: {}, {}'.format(msg, result))
                 await self.socket.send_multipart([_id, msg])
                 sent = True
 
             except zmq.error.ZMQError:
+                self.logger.info('zmq error: {}'.format(zmq.error.ZMQError))
                 self.socket.close()
                 self.setup_socket()
 

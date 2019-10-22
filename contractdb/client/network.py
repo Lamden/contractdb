@@ -1,13 +1,14 @@
 import zmq
 import time
 from zcomm import services
-
 from contracting.db.encoder import encode, decode
 
+import logging
 
 # Defaults
 
 DEFAULT_SOCKET = services._socket('tcp://127.0.0.1:2020')
+logger = logging.getLogger('Client')
 
 
 def get(socket_id: services.SocketStruct,
@@ -18,7 +19,7 @@ def get(socket_id: services.SocketStruct,
         retries=10,
         dealer=False):
 
-    if retries < 0:
+    if retries <= 0:
         return None
 
     if dealer:
@@ -30,12 +31,12 @@ def get(socket_id: services.SocketStruct,
     try:
         socket.connect(str(socket_id))
         time.sleep(5)
-        print("sending msg")
         emsg = encode(msg).encode()
+        logger.info("encoded msg : {}".format(emsg))
         socket.send_multipart([emsg])
-        print("waiting for rcv")
+        logger.info("waiting for rcv")
         response = socket.recv()
-        print("rcv msg")
+        logger.info("rcv msg")
         dres = decode(response[0].decode())
         socket.close()
 
@@ -52,8 +53,9 @@ class ChainCmds:
         self.socket = socket_id
         self.ctx = ctx
 
-    def server_call(self, msg):
+
+    def server_call(self, msg: list):
         print(msg)
         res = get(self.socket, msg, self.ctx, retries=0)
-        print(res)
+        logger.info("Server Res {}".format(res))
         return res

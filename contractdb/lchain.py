@@ -1,6 +1,7 @@
 import click
 import json
 from contractdb.client.network import ChainCmds
+from contractdb.utils import make_tx
 
 
 
@@ -22,20 +23,45 @@ def contract(name):
     """ : Get given contract code"""
     cmd = ChainCmds()
 
-    command = {'command': 'get_contract',
+    command = [{'command': 'get_contract',
                'arguments': {'name': name}
-               }
+               }]
     click.echo(command)
     result = cmd.server_call(command)
     click.echo(result)
 
 
 @cli.command()
-@click.option('--tx', help='json string')
+@click.option('--key', help=' ecdsa.SigningKey')
+@click.option('--contract', help='contract name')
+@click.option('--func', help='executing function')
+@click.option('--name', help='name')
+@click.option('--code_path', type=click.File('rb'), help='Give input file for new contract')
 def run(tx):
     """ : Run given tx dict """
-    dict = json.loads(tx)
-    res = run(dict)
+    cmd = ChainCmds()
+
+    code = ""
+    while True:
+        chunk = code_path.read(1024)
+        if not chunk:
+            break
+        code = code + " " + str(chunk)
+
+
+    tx = make_tx(key,
+                 contract = contract,
+                 func = func,
+                 arguments = {
+                     'code': code,
+                     'name': name
+                 })
+
+    command = {'command': 'run',
+               'arguments': {'transaction': tx}
+               }
+
+    res = cmd.server_call(command)
     click.echo(res)
 
 
