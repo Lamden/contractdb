@@ -69,6 +69,7 @@ class Server:
 
         # If this fails, just set the result to None
         except Exception as e:
+            print('EXCEPTION!! -> ', str(e))
             result = None
 
         # Try to send the message now. This persists if the socket fails.

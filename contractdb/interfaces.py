@@ -172,6 +172,8 @@ class StateInterface:
             return results
 
     def lint(self, code: str):
+        a = self.helper.get_violations_for_code(code)
+        print(a)
         return self.helper.get_violations_for_code(code)
 
     def compile_code(self, code: str):
@@ -179,17 +181,22 @@ class StateInterface:
 
     def process_json_rpc_command(self, payload: dict):
         command = payload.get('command')
+        print('cmd ->',command)
         arguments = payload.get('arguments')
+        print('args ->', arguments)
 
         if command is None:
+            print('COMMAND IS NONE')
             return
 
         if arguments is None:
+            print('ARGS IS NONE')
             return
 
         func = self.command_map.get(command)
 
         if func is None:
+            print('FUNC IS NONE')
             return
 
         result = func(**arguments)
