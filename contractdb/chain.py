@@ -39,6 +39,12 @@ class BlockStorageDriver:
     def store_txs(self, txs: list):
         raise NotImplementedError
 
+    def validate_block(self, b):
+        raise NotImplementedError
+
+    def sync_state(self, state_driver):
+        raise NotImplementedError
+
     @property
     def height(self):
         raise NotImplementedError

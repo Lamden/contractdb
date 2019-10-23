@@ -42,6 +42,7 @@ class StateInterface:
             self.command_map.update({
                 'get_block_by_hash': self.blocks.get_block_by_hash,
                 'get_block_by_index': self.blocks.get_block_by_index,
+                'get_transaction_by_hash': self.blocks.get_transaction_by_hash,
                 'block_height': self.blocks.height,
                 'block_hash': self.blocks.latest_hash,
             })
