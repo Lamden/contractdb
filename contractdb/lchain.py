@@ -2,7 +2,6 @@ import click
 import json
 from contractdb.client.network import ChainCmds
 from contractdb.utils import make_tx
-from pathlib import Path
 
 @click.group()
 @click.option('--verbose', is_flag=True)
@@ -22,9 +21,9 @@ def contract(name):
     """ : Get given contract code"""
     cmd = ChainCmds()
 
-    command = [{'command': 'get_contract',
+    command = {'command': 'get_contract',
                'arguments': {'name': name}
-               }]
+               }
     click.echo(command)
     result = cmd.server_call(command)
     click.echo(result)
@@ -69,18 +68,11 @@ def run(key, contract, func, name, code_path):
 def lint(path):
     """ : Run linter on given code str """
     cmd = ChainCmds()
-    print(path)
     code = None
     with open(path, 'r') as f:
         code = f.read()
 
     click.echo(path)
-    # code = str(Path(path).read_text())
-    # while True:
-    #     chunk = path.read(1024)
-    #     if not chunk:
-    #         break
-    #     code = code + " " + str(chunk)
     print(code)
     command = {'command': 'lint',
                'arguments': {'code': code}
@@ -95,13 +87,18 @@ def lint(path):
 @click.option('--path', type=click.File('rb'), help='Give input file for new contract')
 def compile_contract(path):
     """ : Compile given code str """
-    code = ""
-    while True:
-        chunk = path.read(1024)
-        if not chunk:
-            break
-        code = code + " " + str(chunk)
-    click.echo(code)
+    cmd = ChainCmds()
+
+    code = None
+    with open(path, 'r') as f:
+        code = f.read()
+
+    command = {'command': 'compile',
+               'arguments': {'code': code}
+               }
+    click.echo(command)
+    res = cmd.server_call(command)
+    click.echo(res)
 
 
 @cli.command()

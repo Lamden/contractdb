@@ -36,7 +36,7 @@ def get(socket_id: services.SocketStruct,
         print("waiting for rcv")
         response = socket.recv()
         print("rcv msg ->", response)
-        dres = decode(response[0].decode())
+        dres = decode(response.decode())
         socket.close()
 
         return dres
