@@ -1,5 +1,6 @@
 import click
 import json
+import ecdsa
 from contractdb.client.network import ChainCmds
 from contractdb.utils import make_tx
 
@@ -30,24 +31,25 @@ def contract(name):
 
 
 @cli.command()
-@click.option('--key', help=' ecdsa.SigningKey')
-@click.option('--contract', help='contract name')
+#@click.option('--key', help=' ecdsa.SigningKey')
+@click.option('--contract', help='invoking contract name')
 @click.option('--func', help='executing function')
-@click.option('--name', help='name')
-@click.option('--code_path', type=click.File('rb'), help='Give input file for new contract')
-def run(key, contract, func, name, code_path):
+@click.option('--name', help='name new contract')
+@click.option('--code_path', type=click.Path(), help='Give input file for new contract')
+def run(contract, func, name, code_path):
     """ : Run given tx dict """
     cmd = ChainCmds()
 
+    nakey = ecdsa.SigningKey.generate(curve = ecdsa.NIST256p)
+    pk = nakey.get_verifying_key().to_string().hex()
+
+    click.echo(pk)
+
     code = ""
-    while True:
-        chunk = code_path.read(1024)
-        if not chunk:
-            break
-        code = code + " " + str(chunk)
+    with open(code_path, 'r') as f:
+        code = f.read()
 
-
-    tx = make_tx(key,
+    tx = make_tx(nakey,
                  contract = contract,
                  func = func,
                  arguments = {
