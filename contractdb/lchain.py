@@ -106,6 +106,14 @@ def compile_contract(path):
 def get_vars(contract):
     """ : Get Vars for given contract """
 
+    cmd = ChainCmds
+    command = {'command': 'get_vars',
+               'arguments': {'contract': contract}
+               }
+    click.echo(command)
+    result = cmd.server_call(command)
+    click.echo(result)
+
 
 if __name__ == '__main__':
     cli()
