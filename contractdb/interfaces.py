@@ -8,7 +8,7 @@ import logging
 
 NO_CONTRACT = 1
 NO_VARIABLE = 2
-
+LINT_VIOLATIONS = 3
 
 class StateInterface:
     def __init__(self, driver, compiler, engine: Engine, blocks: BlockStorageDriver=None):
@@ -175,7 +175,12 @@ class StateInterface:
         return self.helper.get_violations_for_code(code)
 
     def compile_code(self, code: str):
-        return self.compiler.parse_to_code(code)
+        try:
+            return self.compiler.parse_to_code(code)
+        except Exception:
+            return {
+                'status': LINT_VIOLATIONS
+            }
 
     def process_json_rpc_command(self, payload: dict):
         command = payload.get('command')

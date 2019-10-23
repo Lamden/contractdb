@@ -1,6 +1,8 @@
 from setuptools import setup, find_packages
+from setuptools.extension import Extension
 
-major = 0
+from Cython.Build import cythonize
+from Cython.Distutils import build_ext
 
 __version__ = '0.1.1'
 
@@ -16,7 +18,6 @@ setup(
     description='Python-based smart contract language and interpreter.',
     packages=find_packages(),
     install_requires=requirements,
-    url='https://github.com/Lamden/contracting',
     author='Lamden',
     author_email='team@lamden.io',
     classifiers=[
@@ -24,4 +25,11 @@ setup(
     ],
     zip_safe=True,
     include_package_data=True,
+    ext_modules=cythonize(
+        Extension('contractdb.*', ['contractdb']),
+        build_dir='build',
+    ),
+    cmdclass=dict(
+        build_ext=build_ext
+    )
 )
