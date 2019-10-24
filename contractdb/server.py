@@ -30,10 +30,12 @@ class Server:
                                         engine=Engine(),
                                         blocks=SQLLiteBlockStorageDriver())
 
-        self.logger = logging.getLogger('Server')
-        self.logger.info("Server init")
+        self.log = logging.getLogger('Server')
+        self.log.info("Server init")
 
     async def serve(self):
+        self.log.info("ContractDB server is starting .. ")
+
         self.setup_socket()
 
         self.running = True
@@ -43,16 +45,16 @@ class Server:
                 event = await self.socket.poll(timeout=self.poll_timeout, flags=zmq.POLLIN)
                 if event:
                     m = await self.socket.recv_multipart()
-                    self.logger.info(f'got {m}')
+                    self.log.info(f'got {m}')
                     _id = m[0]
                     msg = m[1]
-                    self.logger.info("id : {}".format(_id))
-                    self.logger.info("msg : {}".format(msg))
+                    self.log.info("id : {}".format(_id))
+                    self.log.info("msg : {}".format(msg))
                     asyncio.ensure_future(self.handle_msg(_id, msg))
                     await asyncio.sleep(0)
 
             except zmq.error.ZMQError:
-                self.logger.info('zmq error: {}'.format(zmq.error.ZMQError))
+                self.log.info('zmq error: {}'.format(zmq.error.ZMQError))
                 self.socket.close()
                 self.setup_socket()
 
@@ -63,7 +65,7 @@ class Server:
         try:
             json_command = decode(msg.decode())
 
-            self.logger.info('Received command: {}, {}'.format(json_command, msg))
+            self.log.info('Received command: {}'.format(json_command))
 
             result = self.interface.process_json_rpc_command(json_command)
 

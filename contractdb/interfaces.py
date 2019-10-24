@@ -46,7 +46,7 @@ class StateInterface:
                 'block_hash': self.blocks.latest_hash,
             })
 
-        self.logger = logging.getLogger('StateInterface')
+        self.log = logging.getLogger('StateInterface')
 
     def ok(self):
         return {'result': 'ok'}
@@ -55,6 +55,7 @@ class StateInterface:
         code = self.driver.get_contract(name)
 
         if code is None:
+            self.log.error("contract with the name '{}' is not found".format(name))
             return {
                 'status': NO_CONTRACT
             }
@@ -125,6 +126,8 @@ class StateInterface:
 
             stored_block = self.blocks.store_txs([result])
 
+            self.log.debug("Stored new block with hash '{}'".format(new_tx_hash))
+
             self.engine.driver.latest_hash = self.blocks.latest_hash()
             self.engine.driver.height = self.blocks.height()
 
@@ -163,6 +166,8 @@ class StateInterface:
         if self.blocks_enabled:
             stored_block = self.blocks.store_txs(results)
 
+            self.log.debug("Stored new blocks for {} transactions".format(len(transactions)))
+
             self.engine.driver.latest_hash = self.blocks.latest_hash()
             self.engine.driver.height = self.blocks.height()
 
@@ -187,16 +192,19 @@ class StateInterface:
 
         if command is None:
             print('COMMAND IS NONE')
+            self.log.error("No command provided with the payload {}".format(payload))
             return
 
         if arguments is None:
             print('ARGS IS NONE')
+            self.log.error("No argument provided for the command {}".format(command))
             return
 
         func = self.command_map.get(command)
 
         if func is None:
             print('FUNC IS NONE')
+            self.log.error("No method found to execute the command {}".format(command))
             return
 
         result = func(**arguments)
