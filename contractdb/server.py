@@ -10,6 +10,7 @@ from contracting.db.encoder import encode, decode
 
 import logging
 
+
 class Server:
     def __init__(self, port: int, ctx: zmq.Context=zmq.asyncio.Context(), linger=2000, poll_timeout=2000):
         self.port = port
@@ -71,7 +72,7 @@ class Server:
 
         # If this fails, just set the result to None
         except Exception as e:
-            print('EXCEPTION!! -> ', str(e))
+            self.log.info('EXCEPTION!! -> ', str(e))
             result = None
 
         # Try to send the message now. This persists if the socket fails.
@@ -80,12 +81,12 @@ class Server:
             try:
                 msg = encode(result).encode()
 
-                self.logger.info('result sent: {}, {}'.format(msg, result))
+                self.log.info('result sent: {}, {}'.format(msg, result))
                 await self.socket.send_multipart([_id, msg])
                 sent = True
 
             except zmq.error.ZMQError:
-                self.logger.info('zmq error: {}'.format(zmq.error.ZMQError))
+                self.log.info('zmq error: {}'.format(zmq.error.ZMQError))
                 self.socket.close()
                 self.setup_socket()
 

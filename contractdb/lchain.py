@@ -12,26 +12,22 @@ def cli(verbose):
 
 
 @cli.command()
-def status():
-    """ : Cli Status"""
-
-
-@cli.command()
-@click.option('--name', default='None', help='Queries for given contract name')
-def contract(name):
-    """ : Get given contract code"""
+@click.option('--contract', default='None', help='Queries for given contract name')
+def check(contract):
+    """ : check given contract exists"""
     cmd = ChainCmds()
 
     command = {'command': 'get_contract',
-               'arguments': {'name': name}
+               'arguments': {'name': contract}
                }
+    click.echo("Query Command")
     click.echo(command)
     result = cmd.server_call(command)
+    click.echo("Result")
     click.echo(result)
 
 
 @cli.command()
-#@click.option('--key', help=' ecdsa.SigningKey')
 @click.option('--contract', help='invoking contract name')
 @click.option('--func', help='executing function')
 @click.option('--name', help='name new contract')
@@ -42,8 +38,6 @@ def run(contract, func, name, code_path):
 
     nakey = ecdsa.SigningKey.generate(curve = ecdsa.NIST256p)
     pk = nakey.get_verifying_key().to_string().hex()
-
-    click.echo(pk)
 
     code = ""
     with open(code_path, 'r') as f:
@@ -60,8 +54,10 @@ def run(contract, func, name, code_path):
     command = {'command': 'run',
                'arguments': {'transaction': tx}
                }
-
+    click.echo("Query Command")
+    click.echo(command)
     res = cmd.server_call(command)
+    click.echo("Result")
     click.echo(res)
 
 
@@ -75,13 +71,13 @@ def lint(path):
         code = f.read()
 
     click.echo(path)
-    print(code)
     command = {'command': 'lint',
                'arguments': {'code': code}
                }
-
+    click.echo("Query Command")
     click.echo(command)
     res = cmd.server_call(command)
+    click.echo("Result")
     click.echo(res)
 
 
@@ -98,8 +94,10 @@ def compile_contract(path):
     command = {'command': 'compile',
                'arguments': {'code': code}
                }
+    click.echo("Query Command")
     click.echo(command)
     res = cmd.server_call(command)
+    click.echo("Result")
     click.echo(res)
 
 
@@ -112,8 +110,10 @@ def get_vars(contract):
     command = {'command': 'get_vars',
                'arguments': {'contract': contract}
                }
+    click.echo("Query Command")
     click.echo(command)
     result = cmd.server_call(command)
+    click.echo("Result")
     click.echo(result)
 
 

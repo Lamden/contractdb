@@ -49,15 +49,13 @@ def get(socket_id: services.SocketStruct,
 
 class ChainCmds:
     def __init__(self, socket_id=DEFAULT_SOCKET, ctx=zmq.Context()):
-        self.logger = logging.getLogger('Client')
+        self.log = logging.getLogger('Client')
 
         self.socket = socket_id
         self.ctx = ctx
 
-
     def server_call(self, msg: dict):
-        print("enter server call")
-        self.logger.info("Server call msg -> {}".format(msg))
+        self.log.info("Server call msg -> {}".format(msg))
         res = get(self.socket, msg, self.ctx, retries=0, dealer=True)
-        self.logger.info("Server Res {}".format(res))
+        self.log.info("Server Res {}".format(res))
         return res
