@@ -48,7 +48,7 @@ class StateInterface:
 
         self.log = logging.getLogger('StateInterface')
 
-    def ok(self, *args):
+    def ok(self):
         return {'result': 'ok'}
 
     def get_contract(self, name: str):
@@ -177,6 +177,8 @@ class StateInterface:
             return results
 
     def lint(self, code: str):
+        a = self.helper.get_violations_for_code(code)
+        print(a)
         return self.helper.get_violations_for_code(code)
 
     def compile_code(self, code: str):
@@ -184,19 +186,24 @@ class StateInterface:
 
     def process_json_rpc_command(self, payload: dict):
         command = payload.get('command')
+        print('cmd ->',command)
         arguments = payload.get('arguments')
+        print('args ->', arguments)
 
         if command is None:
+            print('COMMAND IS NONE')
             self.log.error("No command provided with the payload {}".format(payload))
             return
 
         if arguments is None:
+            print('ARGS IS NONE')
             self.log.error("No argument provided for the command {}".format(command))
             return
 
         func = self.command_map.get(command)
 
         if func is None:
+            print('FUNC IS NONE')
             self.log.error("No method found to execute the command {}".format(command))
             return
 

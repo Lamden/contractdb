@@ -1,4 +1,6 @@
 contracting
+click
 zmq
 nacl
 yaml
+zcomm

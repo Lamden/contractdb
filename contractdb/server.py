@@ -10,6 +10,7 @@ from contracting.db.encoder import encode, decode
 
 import logging
 
+
 class Server:
     def __init__(self, port: int, ctx: zmq.Context=zmq.asyncio.Context(), linger=2000, poll_timeout=2000):
         self.port = port
@@ -31,6 +32,7 @@ class Server:
                                         blocks=SQLLiteBlockStorageDriver())
 
         self.log = logging.getLogger('Server')
+        self.log.info("Server init")
 
     async def serve(self):
         self.log.info("ContractDB server is starting .. ")
@@ -43,12 +45,17 @@ class Server:
             try:
                 event = await self.socket.poll(timeout=self.poll_timeout, flags=zmq.POLLIN)
                 if event:
-                    _id = await self.socket.recv()
-                    msg = await self.socket.recv()
+                    m = await self.socket.recv_multipart()
+                    self.log.info(f'got {m}')
+                    _id = m[0]
+                    msg = m[1]
+                    self.log.info("id : {}".format(_id))
+                    self.log.info("msg : {}".format(msg))
                     asyncio.ensure_future(self.handle_msg(_id, msg))
                     await asyncio.sleep(0)
 
             except zmq.error.ZMQError:
+                self.log.info('zmq error: {}'.format(zmq.error.ZMQError))
                 self.socket.close()
                 self.setup_socket()
 
@@ -65,6 +72,7 @@ class Server:
 
         # If this fails, just set the result to None
         except Exception as e:
+            self.log.info('EXCEPTION!! -> ', str(e))
             result = None
 
         # Try to send the message now. This persists if the socket fails.
@@ -73,10 +81,12 @@ class Server:
             try:
                 msg = encode(result).encode()
 
+                self.log.info('result sent: {}, {}'.format(msg, result))
                 await self.socket.send_multipart([_id, msg])
                 sent = True
 
             except zmq.error.ZMQError:
+                self.log.info('zmq error: {}'.format(zmq.error.ZMQError))
                 self.socket.close()
                 self.setup_socket()
 
