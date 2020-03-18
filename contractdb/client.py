@@ -94,10 +94,10 @@ class ContractDBClient:
         msg = self.build_command('get_transaction_by_hash', h=h)
         return self.server_call(msg)
 
-    def block_height(self, h):
+    def block_height(self):
         msg = self.build_command('block_height')
         return self.server_call(msg)
 
-    def block_hash(self, h):
+    def block_hash(self):
         msg = self.build_command('block_hash')
         return self.server_call(msg)

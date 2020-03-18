@@ -85,7 +85,7 @@ def stu():
 
         tasks = asyncio.gather(
             m.serve(),
-            get(command, self.ctx),
+            get(command, self.ctx, _json=True),
             stop_server(m, 0.2),
         )
 
