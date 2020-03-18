@@ -4,24 +4,23 @@ from contracting.db.driver import ContractDriver
 
 
 class ContractDBDriver(ContractDriver):
-    def __init__(self, host=config.DB_URL, port=config.DB_PORT, delimiter=config.INDEX_SEPARATOR, db=0,
-                 code_key=config.CODE_KEY, type_key=config.TYPE_KEY):
-        super().__init__(host, port, delimiter, db, code_key, type_key)
+    def __init__(self):
+        super().__init__()
 
         # Tests if access to the DB is available
         self.sets = {}
         self.height_key = '__H'
         self.latest_hash_key = '__L'
 
-    def set(self, key, value):
+    def set(self, key, value, **kwargs):
         self.sets[key] = encode(value)
-        super().set(key, value)
+        super().set(key, value, **kwargs)
 
     def clear_sets(self):
         self.sets = {}
 
-    def set_contract(self, name, code, owner=None, overwrite=False):
-        super().set_contract(name, code, owner, overwrite)
+    def set_contract(self, name, code, owner=None, overwrite=False, **kwargs):
+        super().set_contract(name, code, owner, overwrite, **kwargs)
         self.commit()
 
     def get_key(self, contract, variable, key):

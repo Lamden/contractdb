@@ -87,7 +87,7 @@ class StateInterface:
         else:
             key = []
 
-        k = self.driver.make_key(key=contract, field=variable, args=key)
+        k = self.driver.make_key(contract=contract, variable=variable, args=key)
 
         response = self.driver.get(k)
 
