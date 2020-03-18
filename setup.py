@@ -6,9 +6,13 @@ __version__ = '0.1.1'
 
 requirements = [
     'pyzmq',
-    'ecdsa'
+    'ecdsa',
+    'contracting',
+    'Click',
+    'zmq',
+    'PyNaCl',
+    'PyYAML'
 ]
-
 
 setup(
     name='contractdb',
@@ -16,6 +20,10 @@ setup(
     description='Python-based smart contract language and interpreter.',
     packages=find_packages(),
     install_requires=requirements,
+    entry_points='''
+        [console_scripts]
+        lchain=contractdb.lchain:cli
+    ''',
     url='https://github.com/Lamden/contracting',
     author='Lamden',
     author_email='team@lamden.io',

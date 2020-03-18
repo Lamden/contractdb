@@ -64,7 +64,9 @@ class CodeHelper:
 
         return_list = []
 
-        for violation in violations:
-            return_list.append(violation)
+        if violations is not None:
+            for violation in violations:
+                return_list.append(violation)
 
+        print('violations list -> ', violations)
         return return_list
